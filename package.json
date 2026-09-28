@@ -1,0 +1,73 @@
+{
+  "name": "weeklight",
+  "version": "1.1.2",
+  "description": "周光 · 几周之间，从容安排",
+  "main": "src/main.cjs",
+  "author": "Weeklight",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "test:ui": "node tests/desktop.cjs",
+    "build": "electron-builder --win dir",
+    "dist": "electron-builder --win nsis",
+    "test:widget": "node tests/widget-desktop.cjs",
+    "test:packaged": "node tests/package-smoke.cjs",
+    "build:native": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-native.ps1",
+    "prestart": "npm run build:native",
+    "prebuild": "npm run build:native",
+    "predist": "npm run build:native",
+    "test:layer": "node tests/widget-layer.cjs",
+    "pretest:widget": "npm run build:native",
+    "pretest:layer": "npm run build:native"
+  },
+  "build": {
+    "appId": "local.weeklight.planner",
+    "productName": "周光",
+    "directories": {
+      "output": "outputs/weeklight-1.1.2"
+    },
+    "files": [
+      "src/**/*",
+      "!src/native/*.exe",
+      "package.json",
+      "LICENSE"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.ico",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "周光",
+      "artifactName": "Weeklight-Setup-${version}.${ext}"
+    },
+    "electronDist": "node_modules/electron/dist",
+    "extraResources": [
+      {
+        "from": "src/native/WeeklightLayer.exe",
+        "to": "native/WeeklightLayer.exe"
+      }
+    ]
+  },
+  "devDependencies": {
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
+    "playwright": "^1.63.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OrangeCatzhang/weeklight.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OrangeCatzhang/weeklight/issues"
+  },
+  "homepage": "https://github.com/OrangeCatzhang/weeklight#readme"
+}

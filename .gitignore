@@ -1,0 +1,20 @@
+# This workspace also contains unrelated work. Only the app source is public.
+/*
+!/.gitignore
+!/.gitattributes
+!/LICENSE
+!/README.md
+!/CHANGELOG.md
+!/package.json
+!/package-lock.json
+!/src/
+!/scripts/
+!/tests/
+!/docs/
+/src/native/*.exe
+/src/native/*.pdb
+**/.env
+**/.env.*
+**/*.log
+**/*.tmp
+**/node_modules/
