@@ -10,13 +10,13 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ## 下载与安装
 
-**[下载 Windows 安装包（1.1.3，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.3/OrangeSchedule-Setup-1.1.3.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
+**[下载 Windows 安装包（1.1.4，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.4/OrangeSchedule-Setup-1.1.4.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 源码托管在 GitHub，安装 EXE 通过 GitHub Releases 公开分发，不进入源码仓库。
 
 下载安装包后直接运行，按提示选择安装位置。终端用户无需安装 Node.js 或编译工具。安装版可创建桌面与开始菜单快捷方式，并可在设置中启用开机启动。
 
-当前版本 **1.1.3**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
+当前版本 **1.1.4**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
 
 ## 功能
 
@@ -68,9 +68,13 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 无需注册，计划、提醒状态和设置都保存在本机。日常安排与任务管理可以离线使用；跨电脑迁移可导出和导入 JSON 备份。
 
+### 开机自动启动勾选后又取消
+
+请升级到 1.1.4 或更高版本。1.1.3 在状态通知延迟时可能显示旧的勾选状态；新版使用保存返回的最新状态，并核验 Windows 是否接受修改。若系统没有保存，会在设置页显示具体错误，可按提示检查权限或安全软件拦截情况。
+
 ### 下载的 EXE 是安装包还是单文件程序
 
-下载的 `OrangeSchedule-Setup-1.1.3.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
+下载的 `OrangeSchedule-Setup-1.1.4.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
 
 ## 数据与隐私
 
@@ -103,9 +107,10 @@ npm run test:widget
 npm run test:layer
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1
 npm run test:packaged
+npm run test:startup
 ```
 
-桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.3/`：`OrangeSchedule-Setup-1.1.3.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
+桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.4/`：`OrangeSchedule-Setup-1.1.4.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
 
 `npm run test:ui` 提供额外的主日历回归验证。可选的 `scripts/prepare-runtime.cjs` 用于离线准备 Electron，需要 Python 和匹配校验值的官方 Electron ZIP；正常 `npm ci` 不需要运行它。
 
