@@ -14,7 +14,8 @@ button svg{pointer-events:none}
 .sidebar{width:210px;flex-shrink:0;padding:25px 16px 16px;border-right:1px solid var(--line);display:flex;flex-direction:column;background:rgba(242,243,245,.88);backdrop-filter:blur(24px);overflow-y:auto;scrollbar-width:thin}
 .sidebar>*{flex-shrink:0}
 .brand{display:flex;align-items:center;gap:11px;padding:0 10px 25px;font-size:25px;font-weight:650;letter-spacing:2px}
-.brand img{width:38px;height:38px}
+.brand img{width:38px;height:38px;flex-shrink:0}
+.brand>div{white-space:nowrap}
 .brand span{display:block;font-size:10px;font-weight:400;letter-spacing:1px;color:var(--muted);line-height:1.6;margin-top:1px}
 .primary{background:var(--green);color:#fff;border-radius:9px;padding:10px 19px;font-weight:600;box-shadow:0 2px 4px #284a3210}
 .primary:hover{background:#295c4b}
@@ -215,6 +216,7 @@ dialog::backdrop{background:#292a3033;backdrop-filter:blur(3px)}
 #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);background:#343b37;color:#f7faf4;border-radius:9px;box-shadow:0 6px 24px #2022251a;padding:12px 22px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:10;max-width:70vw}
 #toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:1350px){
+ .brand{font-size:20px;letter-spacing:0;gap:8px}
  .workspace{padding:23px 20px 14px}.day-panel{width:220px}.sidebar{width:192px;padding-left:13px;padding-right:13px}
  .stat-caption{display:none}.content-layout{gap:14px}.calendar-toolbar{padding:13px 11px 9px}
  .date-navigation h2{font-size:14px;margin:0 4px}.segmented button{padding:4px 9px}

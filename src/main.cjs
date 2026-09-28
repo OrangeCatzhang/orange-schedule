@@ -4,6 +4,8 @@ const {cleanTask,dueTasks,makeSeries,validateState,at}=require('./core.cjs');
 const {createWidgetController}=require('./widget-controller.cjs');
 const {normalizePrefs}=require('./widget-model.cjs');
 const APP_ID='local.weeklight.planner';
+const {createLoginSettings}=require('./login-settings.cjs');
+const loginSettings=createLoginSettings({app,loginItemName:APP_ID});
 const {resolveDataPath}=require('./data-path.cjs');
 const dataDir=resolveDataPath(app.getPath('userData'),process.env.WEEKLIGHT_DATA_DIR);
 fs.mkdirSync(dataDir,{recursive:true});app.setPath('userData',dataDir);
@@ -14,12 +16,13 @@ let startupError='';let win,tray,popup,widgetController,quitting=false;const not
 try{if(fs.existsSync(dataFile))state=validateState(JSON.parse(fs.readFileSync(dataFile,'utf8')));}
 catch(e){startupError='计划文件无法读取，已保留原文件。请从设置导入备份。'+e.message;fs.copyFileSync(dataFile,path.join(dataDir,'plans-recovery-'+Date.now()+'.json'));}
 function persist(next){const temp=dataFile+'.tmp';fs.writeFileSync(temp,JSON.stringify(next,null,2),'utf8');if(fs.existsSync(dataFile))fs.copyFileSync(dataFile,dataFile+'.bak');fs.renameSync(temp,dataFile);state=next;}
-function snapshot(){return {...state,dataDir,startupError,autostart:app.isPackaged&&app.getLoginItemSettings().openAtLogin,packaged:app.isPackaged};}
+function startupEnabled(){try{return loginSettings.getOpenAtLogin();}catch{return false;}}
+function snapshot(){return {...state,dataDir,startupError,autostart:startupEnabled(),packaged:app.isPackaged};}
 function broadcast(){for(const w of [win,popup,widgetController?.getWindow()])if(w&&!w.isDestroyed())w.webContents.send('state',snapshot());}
 function change(fn){const next=structuredClone(state);fn(next);persist(next);broadcast();return snapshot();}
 function showMain(){if(win?.isMinimized())win.restore();win?.show();win?.focus();}
 function createWindow(){
-  win=new BrowserWindow({width:1450,height:950,minWidth:1050,minHeight:720,title:'周光 · 计划你的每一周',backgroundColor:'#f7f8fa',icon:path.join(__dirname,'assets/icon.png'),autoHideMenuBar:true,show:!process.argv.includes('--hidden')&&!process.argv.includes('--widget'),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  win=new BrowserWindow({width:1450,height:950,minWidth:1050,minHeight:720,title:'橙子日程 · 计划你的每一周',backgroundColor:'#f7f8fa',icon:path.join(__dirname,'assets/icon.png'),autoHideMenuBar:true,show:!process.argv.includes('--hidden')&&!process.argv.includes('--widget'),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
   win.loadFile(path.join(__dirname,'index.html'));
   win.on('close',e=>{if(!quitting){e.preventDefault();win.hide();}});
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
@@ -28,7 +31,7 @@ function createWindow(){
 function showReminder(){
   if(!state.settings.popup)return;
   if(popup&&!popup.isDestroyed()){popup.showInactive();return;}
-  popup=new BrowserWindow({width:440,height:470,resizable:false,alwaysOnTop:true,title:'周光 · 提醒',autoHideMenuBar:true,icon:path.join(__dirname,'assets/icon.png'),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  popup=new BrowserWindow({width:440,height:470,resizable:false,alwaysOnTop:true,title:'橙子日程 · 提醒',autoHideMenuBar:true,icon:path.join(__dirname,'assets/icon.png'),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
   popup.loadFile(path.join(__dirname,'reminder.html'));popup.on('closed',()=>{popup=null;});
   popup.webContents.setWindowOpenHandler(()=>({action:'deny'}));popup.webContents.on('will-navigate',e=>e.preventDefault());
 }
@@ -57,11 +60,12 @@ if(!app.requestSingleInstanceLock()){app.quit();}
 else{
 app.on('second-instance',(_event,args)=>{if(args.includes('--widget'))widgetController?.open();else showMain();});
 app.whenReady().then(()=>{
+ try{loginSettings.migrateLegacyOnce();}catch(e){console.error('Startup shortcut migration skipped:',e.message);}
  Menu.setApplicationMenu(null);createWindow();
  widgetController=createWidgetController({getState:()=>state,change,isQuitting:()=>quitting});
  tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'assets/icon.png')).resize({width:20,height:20}));
- tray.setToolTip('周光 · 提醒在后台运行');
- tray.setContextMenu(Menu.buildFromTemplate([{label:'打开周光',click:showMain},{label:'桌面便签',click:()=>widgetController.open()},{label:'新建计划',click:()=>{showMain();win.webContents.send('new-task');}},{type:'separator'},{label:'退出周光（停止提醒）',click:()=>{quitting=true;app.quit();}}]));
+ tray.setToolTip('橙子日程 · 提醒在后台运行');
+ tray.setContextMenu(Menu.buildFromTemplate([{label:'打开橙子日程',click:showMain},{label:'桌面便签',click:()=>widgetController.open()},{label:'新建计划',click:()=>{showMain();win.webContents.send('new-task');}},{type:'separator'},{label:'退出橙子日程（停止提醒）',click:()=>{quitting=true;app.quit();}}]));
  tray.on('double-click',showMain);tray.on('click',showMain);
  handle('get',()=>snapshot());
  handle('save-task',(input,count=1)=>{const old=state.tasks.find(t=>t.id===input.id);const t=cleanTask({...input,done:old?old.done:input.done},old);if(state.tasks.length+count>10000)throw new Error('计划数量已达上限，请先导出归档');return change(s=>{if(old){s.tasks=s.tasks.map(x=>x.id===t.id?t:x);if(t.done)s.history.forEach(h=>{if(h.taskId===t.id)h.dismissed=true;});}else s.tasks.push(...makeSeries(t,Number(count)));});});
@@ -70,9 +74,9 @@ app.whenReady().then(()=>{
  handle('move-task',(id,date,time)=>{const old=state.tasks.find(x=>x.id===id);if(!old)throw new Error('计划不存在');const t=cleanTask({...old,date,time:time||old.time},old);return change(s=>{s.tasks=s.tasks.map(x=>x.id===id?t:x);s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});});});
  handle('reminder-action',(id,action)=>change(s=>{const t=s.tasks.find(x=>x.id===id);if(!t)return;if(action==='snooze'){t.snoozeUntil=Date.now()+600000;}else if(action==='done'){t.done=true;t.snoozeUntil=null;}else if(action!=='dismiss')throw new Error('操作无效');s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});}));
  handle('settings',settings=>{if(typeof settings.autostart==='boolean'&&app.isPackaged)app.setLoginItemSettings({openAtLogin:settings.autostart,path:process.execPath,args:['--hidden']});return change(s=>{if(typeof settings.sound==='boolean')s.settings.sound=settings.sound;if(typeof settings.popup==='boolean')s.settings.popup=settings.popup;});});
- handle('test-reminder',()=>{notify('周光提醒已准备好','这是一条测试通知。关闭主窗口后，周光会继续在托盘运行。');showReminder();return true;});
- handle('export',async()=>{const r=await dialog.showSaveDialog(win,{title:'导出周光备份',defaultPath:path.join(dataDir,'周光备份-'+new Date().toISOString().slice(0,10)+'.json'),filters:[{name:'JSON 备份',extensions:['json']}]});if(!r.canceled){fs.writeFileSync(r.filePath,JSON.stringify(state,null,2),'utf8');return r.filePath;}return null;});
- handle('import',async()=>{const r=await dialog.showOpenDialog(win,{title:'导入周光备份',properties:['openFile'],filters:[{name:'JSON 备份',extensions:['json']}]});if(r.canceled)return null;if(fs.statSync(r.filePaths[0]).size>20*1024*1024)throw new Error('备份文件超过 20 MB');const incoming=validateState(JSON.parse(fs.readFileSync(r.filePaths[0],'utf8').replace(/^\uFEFF/,'')));const confirm=await dialog.showMessageBox(win,{type:'question',buttons:['取消','导入并合并'],defaultId:0,cancelId:0,message:'导入 '+incoming.tasks.length+' 项计划？',detail:'相同 ID 的计划将使用备份中的内容，其余现有计划保留。导入前会自动保存完整备份。'});if(confirm.response!==1)return null;fs.writeFileSync(path.join(dataDir,'before-import-'+Date.now()+'.json'),JSON.stringify(state,null,2),'utf8');return change(s=>{const map=new Map(s.tasks.map(t=>[t.id,t]));incoming.tasks.forEach(t=>map.set(t.id,t));if(map.size>10000)throw new Error('合并后超过 10000 项上限');s.tasks=[...map.values()];});});
+ handle('test-reminder',()=>{notify('橙子日程提醒已准备好','这是一条测试通知。关闭主窗口后，橙子日程会继续在托盘运行。');showReminder();return true;});
+ handle('export',async()=>{const r=await dialog.showSaveDialog(win,{title:'导出橙子日程备份',defaultPath:path.join(dataDir,'橙子日程备份-'+new Date().toISOString().slice(0,10)+'.json'),filters:[{name:'JSON 备份',extensions:['json']}]});if(!r.canceled){fs.writeFileSync(r.filePath,JSON.stringify(state,null,2),'utf8');return r.filePath;}return null;});
+ handle('import',async()=>{const r=await dialog.showOpenDialog(win,{title:'导入橙子日程备份',properties:['openFile'],filters:[{name:'JSON 备份',extensions:['json']}]});if(r.canceled)return null;if(fs.statSync(r.filePaths[0]).size>20*1024*1024)throw new Error('备份文件超过 20 MB');const incoming=validateState(JSON.parse(fs.readFileSync(r.filePaths[0],'utf8').replace(/^\uFEFF/,'')));const confirm=await dialog.showMessageBox(win,{type:'question',buttons:['取消','导入并合并'],defaultId:0,cancelId:0,message:'导入 '+incoming.tasks.length+' 项计划？',detail:'相同 ID 的计划将使用备份中的内容，其余现有计划保留。导入前会自动保存完整备份。'});if(confirm.response!==1)return null;fs.writeFileSync(path.join(dataDir,'before-import-'+Date.now()+'.json'),JSON.stringify(state,null,2),'utf8');return change(s=>{const map=new Map(s.tasks.map(t=>[t.id,t]));incoming.tasks.forEach(t=>map.set(t.id,t));if(map.size>10000)throw new Error('合并后超过 10000 项上限');s.tasks=[...map.values()];});});
  handle('open-data',()=>shell.openPath(dataDir));
  handle('show-main',()=>showMain());
  handle('open-widget',()=>{widgetController.open();return snapshot();});

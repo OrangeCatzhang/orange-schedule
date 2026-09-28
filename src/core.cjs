@@ -30,7 +30,7 @@ function makeSeries(task, count=1) {
   });
 }
 function validateState(raw) {
-  if (raw?.version!==1||!Array.isArray(raw.tasks)||raw.tasks.length>10000) throw new Error('不是有效的周光备份（最多 10000 项）');
+  if (raw?.version!==1||!Array.isArray(raw.tasks)||raw.tasks.length>10000) throw new Error('不是有效的橙子日程备份（最多 10000 项）');
   const ids=new Set();
   const tasks=raw.tasks.map(t=>{
     if(typeof t.id!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(t.id)||ids.has(t.id)) throw new Error('备份包含无效或重复的计划 ID');

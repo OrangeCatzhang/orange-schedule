@@ -1,9 +1,9 @@
 {
   "name": "weeklight",
-  "version": "1.1.2",
-  "description": "周光 · 几周之间，从容安排",
+  "version": "1.1.3",
+  "description": "橙子日程 · Windows 桌面日历与待办清单",
   "main": "src/main.cjs",
-  "author": "Weeklight",
+  "author": "OrangeCatzhang",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -23,9 +23,9 @@
   },
   "build": {
     "appId": "local.weeklight.planner",
-    "productName": "周光",
+    "productName": "橙子日程",
     "directories": {
-      "output": "outputs/weeklight-1.1.2"
+      "output": "outputs/weeklight-1.1.3"
     },
     "files": [
       "src/**/*",
@@ -43,8 +43,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "周光",
-      "artifactName": "Weeklight-Setup-${version}.${ext}"
+      "shortcutName": "橙子日程",
+      "artifactName": "OrangeSchedule-Setup-${version}.${ext}"
     },
     "electronDist": "node_modules/electron/dist",
     "extraResources": [
