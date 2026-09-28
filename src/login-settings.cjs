@@ -13,6 +13,16 @@ function createLoginSettings({ app, execPath = process.execPath, platform = proc
     return supported() && read(execPath).openAtLogin === true;
   }
 
+  function setOpenAtLogin(enabled) {
+    if (typeof enabled !== 'boolean') throw new TypeError('开机自动启动设置必须为布尔值');
+    if (!supported()) throw new Error('开机自动启动仅支持打包后的 Windows 应用');
+    app.setLoginItemSettings({ openAtLogin: enabled, path: execPath, args: [...LOGIN_ARGS], name: loginItemName });
+    const saved = getOpenAtLogin();
+    if (saved !== enabled) {
+      throw new Error('Windows 未保存开机自动启动设置。请检查当前账户权限或安全软件是否拦截后重试。');
+    }
+    return saved;
+  }
   function migrateLegacyOnce() {
     if (!supported()) return { migrated: false, reason: 'unsupported' };
     if (migrationChecked) return { migrated: false, reason: 'already-checked' };
@@ -42,7 +52,7 @@ function createLoginSettings({ app, execPath = process.execPath, platform = proc
     return { migrated: true, from: legacyPath, to: execPath };
   }
 
-  return { getOpenAtLogin, migrateLegacyOnce };
+  return { getOpenAtLogin, setOpenAtLogin, migrateLegacyOnce };
 }
 
 module.exports = { createLoginSettings };

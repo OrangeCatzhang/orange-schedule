@@ -123,3 +123,77 @@ test('registry API failures propagate for the startup caller to catch and are no
   writeFailure.app.setLoginItemSettings = () => { throw new Error('Write failed'); };
   assert.throws(() => helper(writeFailure).migrateLegacyOnce(), /Write failed/);
 });
+
+test('setting startup writes the exact current command and verifies enabling and disabling', () => {
+  const responses = new Map();
+  const mock = mockApp(responses);
+  const recordWrite = mock.app.setLoginItemSettings;
+  mock.app.setLoginItemSettings = options => {
+    recordWrite(options);
+    responses.set(current, settings(options.openAtLogin, options.openAtLogin ? [entry(current)] : []));
+  };
+  const login = helper(mock);
+  assert.equal(login.setOpenAtLogin(true), true);
+  assert.equal(login.setOpenAtLogin(false), false);
+  assert.deepEqual(mock.writes, [
+    { openAtLogin: true, path: current, args: ['--hidden'], name: itemName },
+    { openAtLogin: false, path: current, args: ['--hidden'], name: itemName }
+  ]);
+  assert.deepEqual(mock.reads, [
+    { path: current, args: ['--hidden'] },
+    { path: current, args: ['--hidden'] }
+  ]);
+});
+
+test('a silently ignored startup write is reported instead of claiming success', () => {
+  for (const requested of [true, false]) {
+    const mock = mockApp(new Map([[current, settings(!requested)]]));
+    assert.throws(() => helper(mock).setOpenAtLogin(requested), /Windows 未保存.*权限.*安全软件/);
+    assert.deepEqual(mock.writes, [{ openAtLogin: requested, path: current, args: ['--hidden'], name: itemName }]);
+    assert.deepEqual(mock.reads, [{ path: current, args: ['--hidden'] }]);
+  }
+});
+
+test('startup writes reject non-boolean values before calling any registry API', () => {
+  for (const value of [undefined, null, 0, 1, '', 'true', 'false', [], {}, new Boolean(false)]) {
+    const mock = mockApp();
+    assert.throws(() => helper(mock).setOpenAtLogin(value), { name: 'TypeError', message: '开机自动启动设置必须为布尔值' });
+    assert.deepEqual(mock.writes, []);
+    assert.deepEqual(mock.reads, []);
+  }
+});
+
+test('unsupported startup writes reject without reading or changing registry settings', () => {
+  for (const options of [{ packaged: false, platform: 'win32' }, { packaged: true, platform: 'linux' }, { packaged: true, platform: 'darwin' }]) {
+    const mock = mockApp(new Map(), options.packaged);
+    const login = helper(mock, { platform: options.platform });
+    for (const requested of [true, false]) {
+      assert.throws(() => login.setOpenAtLogin(requested), /仅支持打包后的 Windows 应用/);
+    }
+    assert.equal(login.getOpenAtLogin(), false);
+    assert.deepEqual(mock.writes, []);
+    assert.deepEqual(mock.reads, []);
+  }
+});
+
+test('startup verification read failures propagate instead of returning a requested state', () => {
+  for (const requested of [true, false]) {
+    const mock = mockApp();
+    const error = new Error('Registry read failed');
+    mock.app.getLoginItemSettings = options => { mock.reads.push(structuredClone(options)); throw error; };
+    const login = helper(mock);
+    assert.throws(() => login.setOpenAtLogin(requested), value => value === error);
+    assert.deepEqual(mock.writes, [{ openAtLogin: requested, path: current, args: ['--hidden'], name: itemName }]);
+    assert.deepEqual(mock.reads, [{ path: current, args: ['--hidden'] }]);
+    assert.throws(() => login.getOpenAtLogin(), value => value === error);
+  }
+});
+
+test('startup write failures propagate without trying to confirm success', () => {
+  const mock = mockApp();
+  const error = new Error('Registry write failed');
+  mock.app.setLoginItemSettings = options => { mock.writes.push(structuredClone(options)); throw error; };
+  assert.throws(() => helper(mock).setOpenAtLogin(true), value => value === error);
+  assert.equal(mock.writes.length, 1);
+  assert.deepEqual(mock.reads, []);
+});

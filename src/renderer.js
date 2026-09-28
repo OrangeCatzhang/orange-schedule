@@ -177,9 +177,27 @@ document.addEventListener('dragover',e=>{const cell=dropCell(e);if(cell&&dragId)
 document.addEventListener('dragleave',e=>{const cell=e.target.closest('.day-cell,.hour-cell');if(cell&&!cell.contains(e.relatedTarget))cell.classList.remove('dragover');});
 document.addEventListener('dragend',()=>{clearDrag();flushDeferredRender();});
 document.addEventListener('drop',async e=>{const cell=dropCell(e),id=dragId||e.dataTransfer.getData('text/plain');if(cell&&state.tasks.some(t=>t.id===id)){e.preventDefault();clearDrag();await run(()=>api.moveTask(id,cell.dataset.date,cell.dataset.time),'计划已改期');flushDeferredRender();}});
-$('#settings-button').onclick=()=>{syncSettings();openDialog($('#settings-dialog'));};
-function syncSettings(){$('#setting-sound').checked=state.settings.sound;$('#setting-popup').checked=state.settings.popup;$('#setting-startup').checked=state.autostart;$('#setting-startup').disabled=!state.packaged;$('#startup-hint').textContent=state.packaged?'登录 Windows 后在后台运行':'打包后的 Windows 应用支持开机启动';$('#data-path').textContent=state.dataDir;}
-for(const [id,k] of [['sound','sound'],['popup','popup'],['startup','autostart']])$('#setting-'+id).onchange=async e=>{await run(()=>api.settings({[k]:e.target.checked}));syncSettings();};
+let settingsBusy=false,settingsError='';
+const settingsErrorText=e=>e.message.replace(/^Error invoking remote method '[^']+': Error: /,'');
+$('#settings-button').onclick=async()=>{
+ settingsBusy=true;settingsError='';syncSettings();openDialog($('#settings-dialog'));
+ try{state=await api.get();}catch(e){settingsError=settingsErrorText(e);}finally{settingsBusy=false;syncSettings();}
+};
+function syncSettings(){
+ $('#setting-sound').checked=state.settings.sound;$('#setting-popup').checked=state.settings.popup;$('#setting-startup').checked=state.autostart;
+ $('#setting-sound').disabled=settingsBusy;$('#setting-popup').disabled=settingsBusy;$('#setting-startup').disabled=settingsBusy||!state.packaged;
+ $('#startup-hint').textContent=settingsBusy?'正在确认设置…':state.packaged?'登录 Windows 后在后台运行':'请使用 Windows 安装版设置开机启动';
+ $('#settings-error').textContent=settingsError||state.autostartError||'';$('#data-path').textContent=state.dataDir;
+}
+for(const [id,k] of [['sound','sound'],['popup','popup'],['startup','autostart']])$('#setting-'+id).onchange=async e=>{
+ if(settingsBusy)return;
+ const enabled=e.target.checked;settingsBusy=true;settingsError='';
+ for(const input of ['sound','popup','startup'])$('#setting-'+input).disabled=true;
+ $('#startup-hint').textContent='正在保存设置…';$('#settings-error').textContent='';
+ try{state=await api.settings({[k]:enabled});render();}
+ catch(e){settingsError=settingsErrorText(e);try{state=await api.get();}catch{}}
+ finally{settingsBusy=false;syncSettings();}
+};
 $('#test-reminder').onclick=()=>run(()=>api.testReminder(),'测试提醒已发送');
 $('#export-data').onclick=()=>run(()=>api.exportData(),'备份已导出');
 $('#import-data').onclick=()=>run(()=>api.importData(),'备份已合并');
