@@ -1,22 +1,22 @@
-# 周光 Weeklight：Windows 开源日程管理、桌面日历与待办清单
+# 橙子日程：Windows 开源日程管理、桌面日历与待办清单
 
-周光（Weeklight）是一个 **免费开源的 Windows（Win）日程管理项目**，提供适用于 **Windows 10 / 11 x64** 的 EXE 安装包。通过桌面日历、待办清单和日 / 周桌面便签安排学习与工作，用四周规划和周时间表管理未来几周，再通过定时提醒跟进每一项计划。
+橙子日程（原周光 Weeklight）是一个 **免费开源的 Windows（Win）日程管理项目**，提供适用于 **Windows 10 / 11 x64** 的 EXE 安装包。通过桌面日历、待办清单和日 / 周桌面便签安排学习与工作，用四周规划和周时间表管理未来几周，再通过定时提醒跟进每一项计划。
 
 应用使用 Electron 构建，提供可直接安装的 Windows EXE 安装包，无需单独安装 Node.js 或浏览器。计划与设置保存在当前 Windows 用户的数据目录中，支持离线使用，无需注册账号。源码采用 MIT 许可证。
 
-Weeklight is a free, open-source Windows calendar planner and to-do list app with desktop sticky notes, weekly planning, scheduled reminders, and offline local storage.
+橙子日程 (formerly Weeklight) is a free, open-source Windows calendar planner and to-do list app with desktop sticky notes, weekly planning, scheduled reminders, and offline local storage.
 
-![周光 Windows 日程管理软件：四周日历、任务分类和周计划](docs/images/calendar.png)
+![橙子日程 Windows 日程管理软件：四周日历、任务分类和周计划](docs/images/calendar.png)
 
 ## 下载与安装
 
-**[下载 Windows 安装包（1.1.2，x64）](https://github.com/OrangeCatzhang/weeklight/releases/download/v1.1.2/Weeklight-Setup-1.1.2.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/weeklight/releases)
+**[下载 Windows 安装包（1.1.3，x64）](https://github.com/OrangeCatzhang/weeklight/releases/download/v1.1.3/OrangeSchedule-Setup-1.1.3.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/weeklight/releases)
 
 源码托管在 GitHub，安装 EXE 通过 GitHub Releases 公开分发，不进入源码仓库。
 
 下载安装包后直接运行，按提示选择安装位置。终端用户无需安装 Node.js 或编译工具。安装版可创建桌面与开始菜单快捷方式，并可在设置中启用开机启动。
 
-当前版本 **1.1.2**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
+当前版本 **1.1.3**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
 
 ## 功能
 
@@ -44,7 +44,7 @@ Weeklight is a free, open-source Windows calendar planner and to-do list app wit
 
 从主窗口右上角「桌面便签」或托盘菜单打开便签。日 / 周按钮切换范围；箭头翻页，日期框跳转，「今天」恢复跟随当前日期。拖动顶部移动，拖动边缘调整大小；「⋯」调整颜色和已办显示。
 
-关闭主窗口后，托盘和提醒继续运行。需要彻底停止时，在托盘选择「退出周光」，或使用设置中的退出按钮。关闭便签只隐藏便签。
+关闭主窗口后，托盘和提醒继续运行。需要彻底停止时，在托盘选择「退出橙子日程」，或使用设置中的退出按钮。关闭便签只隐藏便签。
 
 ![Windows 桌面待办便签：日计划、待办事项与已办清单](docs/images/widget-day.png)
 
@@ -70,9 +70,11 @@ Weeklight is a free, open-source Windows calendar planner and to-do list app wit
 
 ### 下载的 EXE 是安装包还是单文件程序
 
-下载的 `Weeklight-Setup-1.1.2.exe` 是安装程序。安装后通过桌面或开始菜单启动周光，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
+下载的 `OrangeSchedule-Setup-1.1.3.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
 
 ## 数据与隐私
+
+从 1.1.3 起，应用名称改为「橙子日程」。公开版沿用原来的 `weeklight` 数据目录、安装标识和 JSON 备份格式；从 1.1.2 在原安装位置升级可继续使用已有计划。GitHub 仓库地址和旧版下载链接保留，旧名称的备份仍可导入。
 
 默认使用 Electron 的当前用户应用数据目录；在 Windows 上通常位于 `%APPDATA%\weeklight`。实际路径可在「设置与备份」中查看或打开。数据文件为 `plans.json`，上一份保存副本为 `plans.json.bak`。升级应用通常保留此目录；卸载或迁移前建议导出备份。
 
@@ -103,7 +105,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1
 npm run test:packaged
 ```
 
-桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.2/`：`Weeklight-Setup-1.1.2.exe` 为安装包，`win-unpacked/周光.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
+桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.3/`：`OrangeSchedule-Setup-1.1.3.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
 
 `npm run test:ui` 提供额外的主日历回归验证。可选的 `scripts/prepare-runtime.cjs` 用于离线准备 Electron，需要 Python 和匹配校验值的官方 Electron ZIP；正常 `npm ci` 不需要运行它。
 
