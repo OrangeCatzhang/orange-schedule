@@ -1,16 +1,16 @@
 # 橙子日程：Windows 开源日程管理、桌面日历与待办清单
 
-橙子日程（原周光 Weeklight）是一个 **免费开源的 Windows（Win）日程管理项目**，提供适用于 **Windows 10 / 11 x64** 的 EXE 安装包。通过桌面日历、待办清单和日 / 周桌面便签安排学习与工作，用四周规划和周时间表管理未来几周，再通过定时提醒跟进每一项计划。
+橙子日程是一个 **免费开源的 Windows（Win）日程管理项目**，提供适用于 **Windows 10 / 11 x64** 的 EXE 安装包。通过桌面日历、待办清单和日 / 周桌面便签安排学习与工作，用四周规划和周时间表管理未来几周，再通过定时提醒跟进每一项计划。
 
 应用使用 Electron 构建，提供可直接安装的 Windows EXE 安装包，无需单独安装 Node.js 或浏览器。计划与设置保存在当前 Windows 用户的数据目录中，支持离线使用，无需注册账号。源码采用 MIT 许可证。
 
-橙子日程 (formerly Weeklight) is a free, open-source Windows calendar planner and to-do list app with desktop sticky notes, weekly planning, scheduled reminders, and offline local storage.
+Orange Schedule（橙子日程）is a free, open-source Windows calendar planner and to-do list app with desktop sticky notes, weekly planning, scheduled reminders, and offline local storage.
 
 ![橙子日程 Windows 日程管理软件：四周日历、任务分类和周计划](docs/images/calendar.png)
 
 ## 下载与安装
 
-**[下载 Windows 安装包（1.1.3，x64）](https://github.com/OrangeCatzhang/weeklight/releases/download/v1.1.3/OrangeSchedule-Setup-1.1.3.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/weeklight/releases)
+**[下载 Windows 安装包（1.1.3，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.3/OrangeSchedule-Setup-1.1.3.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 源码托管在 GitHub，安装 EXE 通过 GitHub Releases 公开分发，不进入源码仓库。
 
@@ -74,7 +74,7 @@
 
 ## 数据与隐私
 
-从 1.1.3 起，应用名称改为「橙子日程」。公开版沿用原来的 `weeklight` 数据目录、安装标识和 JSON 备份格式；从 1.1.2 在原安装位置升级可继续使用已有计划。GitHub 仓库地址和旧版下载链接保留，旧名称的备份仍可导入。
+从 1.1.3 起，应用由「周光 Weeklight」更名为「橙子日程」。公开版沿用原来的 `weeklight` 数据目录、安装标识和 JSON 备份格式；从 1.1.2 在原安装位置升级可继续使用已有计划。GitHub 仓库现为 `orange-schedule`，旧仓库地址自动跳转；历史版本与旧名称的备份继续保留。
 
 默认使用 Electron 的当前用户应用数据目录；在 Windows 上通常位于 `%APPDATA%\weeklight`。实际路径可在「设置与备份」中查看或打开。数据文件为 `plans.json`，上一份保存副本为 `plans.json.bak`。升级应用通常保留此目录；卸载或迁移前建议导出备份。
 
@@ -87,8 +87,8 @@
 需要 **Windows x64、Node.js 22.12 或更高版本、npm**；本项目使用 Node.js 24 验证。原生层级助手由系统的 .NET Framework C# 编译器构建（Windows 10 / 11 的 .NET Framework 4.x 环境）。
 
 ```powershell
-git clone https://github.com/OrangeCatzhang/weeklight.git
-cd weeklight
+git clone https://github.com/OrangeCatzhang/orange-schedule.git
+cd orange-schedule
 npm ci
 npm start
 ```
@@ -122,6 +122,6 @@ npm run test:packaged
 
 本项目代码按 [MIT 许可证](LICENSE) 开源。Electron、Chromium 及其他依赖遵循各自许可证；二进制发行保留随附的第三方许可文件。
 
-欢迎通过 [Issues](https://github.com/OrangeCatzhang/weeklight/issues) 反馈问题。提交截图或日志前请移除个人计划内容。
+欢迎通过 [Issues](https://github.com/OrangeCatzhang/orange-schedule/issues) 反馈问题。提交截图或日志前请移除个人计划内容。
 
 界面组织参考 [TickTick](https://www.ticktick.com/windows)、[Notion Calendar](https://www.notion.com/product/calendar) 和 [Apple 界面指南](https://developer.apple.com/design/human-interface-guidelines/)，代码与页面为独立实现，与这些产品没有隶属关系。
