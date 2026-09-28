@@ -1,14 +1,12 @@
-# 周光 Weeklight
+# 周光 Weeklight：Windows 开源日程管理、桌面日历与待办清单
 
-**Windows 桌面日历 · 日程管理 · 待办清单 · 周计划 · 定时提醒**
-
-周光（Weeklight）是面向 **Windows 10 / 11 x64** 的免费开源日程管理与桌面待办应用。提供四周日历、周时间表和日 / 周桌面便签，用于规划未来几周、跟踪待办与已办事项，并按设定时间提醒。
+周光（Weeklight）是一个 **免费开源的 Windows（Win）日程管理项目**，提供适用于 **Windows 10 / 11 x64** 的 EXE 安装包。通过桌面日历、待办清单和日 / 周桌面便签安排学习与工作，用四周规划和周时间表管理未来几周，再通过定时提醒跟进每一项计划。
 
 应用使用 Electron 构建，提供可直接安装的 Windows EXE 安装包，无需单独安装 Node.js 或浏览器。计划与设置保存在当前 Windows 用户的数据目录中，支持离线使用，无需注册账号。源码采用 MIT 许可证。
 
 Weeklight is a free, open-source Windows calendar planner and to-do list app with desktop sticky notes, weekly planning, scheduled reminders, and offline local storage.
 
-![周光四周日历](docs/images/calendar.png)
+![周光 Windows 日程管理软件：四周日历、任务分类和周计划](docs/images/calendar.png)
 
 ## 下载与安装
 
@@ -40,7 +38,7 @@ Weeklight is a free, open-source Windows calendar planner and to-do list app wit
 - **电脑桌面待办与便签**：随时查看今天或本周要做的事，直接勾选，必要时置顶。
 - **个人时间管理与生活计划**：在桌面日历中安排未来几周，为运动、课程和日常事务设置提醒。
 
-## 使用
+## Windows 日程管理与桌面待办：开始使用
 
 点击「新建计划」或按 **N**。单击日期查看当天计划，双击空白日期创建；点击已有计划编辑。**Ctrl+K** 搜索名称与备注。
 
@@ -48,13 +46,31 @@ Weeklight is a free, open-source Windows calendar planner and to-do list app wit
 
 关闭主窗口后，托盘和提醒继续运行。需要彻底停止时，在托盘选择「退出周光」，或使用设置中的退出按钮。关闭便签只隐藏便签。
 
-![桌面便签](docs/images/widget-day.png)
+![Windows 桌面待办便签：日计划、待办事项与已办清单](docs/images/widget-day.png)
 
 ### 运行边界
 
 关机、休眠或应用退出期间不能即时提醒；再次运行或恢复后会补发仍未完成、尚未提醒的事项。Windows 通知权限和专注助手可能影响系统通知，独立提醒弹窗可在设置中控制。
 
 便签是独立窗口，没有嵌入资源管理器桌面。**Win+D / 显示桌面可能把便签一起隐藏**，可从主窗口或托盘重新打开。待办与已办按计划日期分组，每周重复生成的事项独立编辑。
+
+## 常见问题
+
+### 免费开源版包含什么
+
+当前仓库提供 MIT 许可的完整应用源码，Releases 提供免费 Windows 安装包。日历、待办清单、桌面便签与提醒功能均包含在此版本中。
+
+### 桌面便签与日历中的待办是否同步
+
+便签按所选日期或周显示同一份计划数据，勾选完成、撤销完成和新增任务会同步到主日历。适合需要把今天或本周任务放到电脑桌面上查看的用户。
+
+### 离线日程管理是否需要注册
+
+无需注册，计划、提醒状态和设置都保存在本机。日常安排与任务管理可以离线使用；跨电脑迁移可导出和导入 JSON 备份。
+
+### 下载的 EXE 是安装包还是单文件程序
+
+下载的 `Weeklight-Setup-1.1.2.exe` 是安装程序。安装后通过桌面或开始菜单启动周光，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
 
 ## 数据与隐私
 
