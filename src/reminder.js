@@ -1,5 +1,9 @@
 const api=window.weeklight,esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function render(s){const pending=s.history.filter(h=>!h.dismissed&&s.tasks.some(t=>t.id===h.taskId&&!t.done)).reverse();
+function render(s){
+ const message=s.reminderMessage;if(message){document.querySelector('#quote-text').textContent=message.text;document.querySelector('#quote-text').dataset.id=message.id;document.querySelector('#quote-source').textContent=message.source==='橙子日程'?'橙子日程原创':message.source;}
+ document.querySelector('#quote-count').textContent=(s.reminderMessageCount||'')+' 条鼓励语';
+ const pending=s.history.filter(h=>!h.dismissed&&s.tasks.some(t=>t.id===h.taskId&&!t.done)).reverse();
 document.querySelector('#reminders').innerHTML=pending.length?pending.map(h=>{const t=s.tasks.find(t=>t.id===h.taskId);return '<div class="reminder-row"><h3>'+esc(t.title)+'</h3><p>'+t.date+' '+t.time+'</p><div class="actions"><button class="small-button" data-id="'+esc(t.id)+'" data-action="done">✓ 完成</button><button class="small-button" data-id="'+esc(t.id)+'" data-action="snooze">10 分钟后提醒</button><button class="text-button" data-id="'+esc(t.id)+'" data-action="dismiss">知道了</button></div></div>';}).join(''):'<div class="notice" style="margin-top:25px"><strong>提醒窗口已就绪</strong><p>当前没有待处理提醒。计划到时后会显示在这里。</p></div>';}
-document.addEventListener('click',async e=>{const b=e.target.closest('[data-id]');if(b){try{await api.reminderAction(b.dataset.id,b.dataset.action);}catch(err){document.querySelector('#reminders').textContent='操作未保存：'+err.message;}}});
-document.querySelector('#open-main').onclick=()=>api.showMain();api.onState(render);api.get().then(render);
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-id][data-action]');if(b){try{document.querySelector('#reminder-error').textContent='';await api.reminderAction(b.dataset.id,b.dataset.action);}catch(err){document.querySelector('#reminder-error').textContent='操作未保存：'+err.message;}}});
+document.querySelector('#quote-next').onclick=async()=>{const button=document.querySelector('#quote-next');button.disabled=true;document.querySelector('#reminder-error').textContent='';try{render(await api.nextReminderMessage());}catch(e){document.querySelector('#reminder-error').textContent='暂时无法更换：'+e.message;}finally{button.disabled=false;}};
+document.querySelector('#open-main').onclick=()=>api.showMain();api.onState(render);api.get().then(render).catch(e=>{document.querySelector('#reminder-error').textContent='无法读取提醒：'+e.message;});

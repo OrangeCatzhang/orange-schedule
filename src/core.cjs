@@ -1,5 +1,6 @@
 const {normalizePrefs}=require('./widget-model.cjs');
 const crypto = require('node:crypto');
+const {normalizeRotation}=require('./reminder-copy.cjs');
 const CATEGORIES = ['work','study','life'];
 function dateKey(d) { return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-'); }
 function at(task) { return new Date(task.date+'T'+task.time+':00').getTime(); }
@@ -39,6 +40,6 @@ function validateState(raw) {
     for(const key of ['notifiedAt','snoozeUntil']) if(t[key]!=null&&(!Number.isFinite(t[key])||t[key]<0)) throw new Error('备份中的提醒状态无效');
     return c;
   });
-  return {version:1,tasks,settings:{sound:raw.settings?.sound!==false,popup:raw.settings?.popup!==false,widget:normalizePrefs(raw.settings?.widget)},history:Array.isArray(raw.history)?raw.history.filter(e=>e&&typeof e.id==='string'&&typeof e.taskId==='string'&&Number.isFinite(e.at)).slice(-300):[]};
+  return {version:1,tasks,settings:{sound:raw.settings?.sound!==false,popup:raw.settings?.popup!==false,widget:normalizePrefs(raw.settings?.widget),reminderRotation:normalizeRotation(raw.settings?.reminderRotation)},history:Array.isArray(raw.history)?raw.history.filter(e=>e&&typeof e.id==='string'&&typeof e.taskId==='string'&&Number.isFinite(e.at)).slice(-300):[]};
 }
 module.exports={dateKey,at,cleanTask,dueTasks,makeSeries,validateState};

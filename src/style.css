@@ -239,3 +239,17 @@ dialog::backdrop{background:#292a3033;backdrop-filter:blur(3px)}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 
+
+/* Reminder copy stays visible while the task list scrolls. */
+.reminder-window{height:100vh;display:flex;flex-direction:column;padding:22px 24px 16px;background:#f8f9f8;overflow:hidden}
+.reminder-heading{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px;font-size:12px;color:var(--muted);flex-shrink:0}
+#quote-count{font-size:11px}
+.reminder-quote{background:#edf4ef;border:1px solid #e0ebe3;border-radius:15px;padding:17px 18px 11px;flex-shrink:0}
+.reminder-quote h1{font-size:21px;line-height:1.6;font-weight:600;letter-spacing:0;color:#2e5041;overflow-wrap:anywhere}
+.reminder-quote-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+#quote-source{font-size:11px;font-style:normal;color:#6c8073;min-width:0;overflow-wrap:anywhere}
+#quote-next{font-size:11px;color:var(--green);padding:5px 6px;flex-shrink:0}
+.reminder-list{flex:1;min-height:0;overflow-y:auto;margin-top:5px;padding-right:3px;scrollbar-width:thin}
+.reminder-list .reminder-row h3{overflow-wrap:anywhere}
+.reminder-footer{flex-shrink:0;padding-top:12px;border-top:1px solid var(--line);margin-top:8px}
+#reminder-error:empty{display:none}
