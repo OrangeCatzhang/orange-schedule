@@ -10,13 +10,13 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ## 下载与安装
 
-**[下载 Windows 安装包（1.1.4，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.4/OrangeSchedule-Setup-1.1.4.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
+**[下载 Windows 安装包（1.1.5，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.5/OrangeSchedule-Setup-1.1.5.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 源码托管在 GitHub，安装 EXE 通过 GitHub Releases 公开分发，不进入源码仓库。
 
 下载安装包后直接运行，按提示选择安装位置。终端用户无需安装 Node.js 或编译工具。安装版可创建桌面与开始菜单快捷方式，并可在设置中启用开机启动。
 
-当前版本 **1.1.4**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
+当前版本 **1.1.5**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
 
 ## 功能
 
@@ -27,6 +27,7 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 - **分类、搜索与改期**：按工作、学习、生活分类，用 Ctrl+K 搜索名称和备注，拖动日历任务调整日期或时段。
 - **每周重复计划**：生成连续 4、8 或 12 周的独立事项，分别编辑、完成和删除。
 - **定时提醒与日程提醒**：到点或提前提醒，系统通知与独立提醒弹窗，支持稍后 10 分钟提醒及恢复后补发。
+- **120 条积极提醒文案**：100 条原创鼓励短句和 20 条有出处的古典名句，每轮随机展示且不重复；重启后继续轮换，弹窗可手动换一句。
 - **系统托盘与开机启动**：关闭主窗口后继续在后台提醒；安装版可在设置中选择开机启动。
 - **便签外观与位置恢复**：三种配色，控制已办清单显示，拖动和缩放窗口，保存位置、大小及视图设置。
 - **本地保存与 JSON 备份**：支持离线规划、备份导出与合并导入；保存采用临时文件替换，并保留上一份数据副本。
@@ -47,6 +48,16 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 关闭主窗口后，托盘和提醒继续运行。需要彻底停止时，在托盘选择「退出橙子日程」，或使用设置中的退出按钮。关闭便签只隐藏便签。
 
 ![Windows 桌面待办便签：日计划、待办事项与已办清单](docs/images/widget-day.png)
+
+### 积极向上的提醒文案
+
+提醒到来时，系统通知和提醒弹窗使用同一句鼓励语。内容涵盖行动、专注、学习、坚持、休息和自我关怀；原创短句与古典名句分别标明来源。
+
+共 120 条文案，一轮看完前不重复，下一轮的第一句也不会与上一句相同。轮换进度保存在本机，重新启动后继续。弹窗中的「换一句」只切换文案，不会额外发送通知或更改任务。
+
+可在「设置与备份」开启「独立提醒窗口」，再点击「发送测试提醒」预览。完整文案和古典名句出处见[提醒文案库](docs/reminder-copy.md)。
+
+![橙子日程提醒窗口：积极鼓励语、换一句、完成与稍后提醒](docs/images/reminder.png)
 
 ### 运行边界
 
@@ -74,7 +85,7 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ### 下载的 EXE 是安装包还是单文件程序
 
-下载的 `OrangeSchedule-Setup-1.1.4.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
+下载的 `OrangeSchedule-Setup-1.1.5.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
 
 ## 数据与隐私
 
@@ -108,15 +119,17 @@ npm run test:layer
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1
 npm run test:packaged
 npm run test:startup
+npm run test:reminder
 ```
 
-桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.4/`：`OrangeSchedule-Setup-1.1.4.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
+桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.5/`：`OrangeSchedule-Setup-1.1.5.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
 
 `npm run test:ui` 提供额外的主日历回归验证。可选的 `scripts/prepare-runtime.cjs` 用于离线准备 Electron，需要 Python 和匹配校验值的官方 Electron ZIP；正常 `npm ci` 不需要运行它。
 
 ## 项目结构
 
 - `src/main.cjs`：桌面窗口、托盘、数据与提醒。
+- `src/reminder-copy.cjs`、`src/reminder-*.json`：120 条提醒文案及持久化轮换。
 - `src/core.cjs`、`src/data-path.cjs`：计划校验、提醒判定和数据目录。
 - `src/renderer.js`、`src/style.css`：主日历界面。
 - `src/widget-*`：桌面便签模型、窗口与界面。
