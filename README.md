@@ -10,13 +10,13 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ## 下载与安装
 
-**[下载 Windows 安装包（1.1.5，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.5/OrangeSchedule-Setup-1.1.5.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
+**[下载 Windows 安装包（1.1.6，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.6/OrangeSchedule-Setup-1.1.6.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 源码托管在 GitHub，安装 EXE 通过 GitHub Releases 公开分发，不进入源码仓库。
 
 下载安装包后直接运行，按提示选择安装位置。终端用户无需安装 Node.js 或编译工具。安装版可创建桌面与开始菜单快捷方式，并可在设置中启用开机启动。
 
-当前版本 **1.1.5**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
+当前版本 **1.1.6**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
 
 ## 功能
 
@@ -42,6 +42,8 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 ## Windows 日程管理与桌面待办：开始使用
 
 点击「新建计划」或按 **N**。单击日期查看当天计划，双击空白日期创建；点击已有计划编辑。**Ctrl+K** 搜索名称与备注。
+
+在「清单」视图中，点击每个日期标题右侧的「＋ 添加计划」可继续添加当天事项，日期会自动填写。保存后入口仍保留；同一天、同一时刻也可以创建多项独立计划。
 
 从主窗口右上角「桌面便签」或托盘菜单打开便签。日 / 周按钮切换范围；箭头翻页，日期框跳转，「今天」恢复跟随当前日期。拖动顶部移动，拖动边缘调整大小；「⋯」调整颜色和已办显示。
 
@@ -85,7 +87,7 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ### 下载的 EXE 是安装包还是单文件程序
 
-下载的 `OrangeSchedule-Setup-1.1.5.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
+下载的 `OrangeSchedule-Setup-1.1.6.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
 
 ## 数据与隐私
 
@@ -120,9 +122,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1
 npm run test:packaged
 npm run test:startup
 npm run test:reminder
+npm run test:list
 ```
 
-桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.5/`：`OrangeSchedule-Setup-1.1.5.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
+桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.6/`：`OrangeSchedule-Setup-1.1.6.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
 
 `npm run test:ui` 提供额外的主日历回归验证。可选的 `scripts/prepare-runtime.cjs` 用于离线准备 Electron，需要 Python 和匹配校验值的官方 Electron ZIP；正常 `npm ci` 不需要运行它。
 
