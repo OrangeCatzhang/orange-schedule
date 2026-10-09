@@ -56,7 +56,7 @@ function render(){
  if(isList)visible=visible.filter(matchesStatus);
  else if(view==='calendar'&&!showCompleted)visible=visible.filter(t=>!t.done);
  $('#view-count').textContent=visible.filter(t=>!t.done).length+' 待办 · '+visible.filter(t=>t.done).length+' 已办';
- $('#calendar-tip').textContent=view==='calendar'&&mode!=='list'?'点击日期查看 · 拖动计划改期 · N 新建':'勾选完成 · 点击计划编辑';
+ $('#calendar-tip').textContent=view==='calendar'?(mode==='list'?'日期旁 ＋ 添加计划 · 点击计划编辑':'点击日期查看 · 拖动计划改期 · N 新建'):'勾选完成 · 点击计划编辑';
  const scroll=$('.week-scroll')?.scrollTop;
  if(view==='calendar'&&mode==='four')renderFour();
  else if(view==='calendar'&&mode==='week')renderWeek();
@@ -97,7 +97,7 @@ function renderList(pending){
   const overdue=ts.filter(isOverdue),current=ts.filter(t=>t.date===today());
   if(overdue.length)content+='<section class="today-group overdue-group"><h3 class="list-group-title">逾期未完成 <span>'+overdue.length+'</span></h3><p class="group-description">可以完成这些计划，或点击修改日期。</p>'+overdue.map(row).join('')+'</section>';
   if(current.length)content+='<section class="today-group"><h3 class="list-group-title">今天 <span>'+current.length+'</span></h3>'+current.map(row).join('')+'</section>';
- }else content=groups.map(d=>'<h3 class="list-group-title">'+fmt(parse(d))+' · 周'+['日','一','二','三','四','五','六'][parse(d).getDay()]+'<span>'+ts.filter(t=>t.date===d).length+'</span></h3>'+ts.filter(t=>t.date===d).map(row).join('')).join('');
+ }else content=groups.map(d=>'<section class="list-day-group" data-list-date="'+d+'"><h3 class="list-group-title">'+fmt(parse(d))+' · 周'+['日','一','二','三','四','五','六'][parse(d).getDay()]+'<span>'+ts.filter(t=>t.date===d).length+'</span>'+(view==='calendar'?'<button type="button" class="list-day-add" data-new-date="'+d+'" aria-label="'+d+' 添加计划">'+icon('plus')+'添加计划</button>':'')+'</h3>'+ts.filter(t=>t.date===d).map(row).join('')+'</section>').join('');
  const emptyTitle=view==='done'||listStatus==='done'?'还没有已完成的计划':listStatus==='todo'?'当前没有待办计划':'这段时间还没有计划';
  $('#calendar').innerHTML='<div class="list-view">'+(content||empty(query?'没有找到匹配的计划':emptyTitle,query?'试试其他关键词，或清除搜索。':listStatus!=='all'?'可以切换清单状态，或添加新的计划。':'点击「新建计划」，安排下一步。'))+'</div>';
 }

@@ -145,6 +145,10 @@ h1{font-weight:650;font-size:28px;line-height:1.35;letter-spacing:-.5px}
 .list-view{min-height:480px;padding:0 23px 24px}
 .list-group-title{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:#626970;margin:24px 0 6px}
 .list-group-title span{font-size:11px;padding:0 6px;background:#f2f3f5;color:#626970;border-radius:5px;font-weight:500}
+.list-day-add{display:inline-flex;align-items:center;gap:4px;margin-left:auto;padding:6px 9px;border:1px solid #dbe5df;border-radius:7px;background:#f6faf7;color:var(--green);font-size:12px;font-weight:500;white-space:nowrap}
+.list-day-add svg{width:14px;height:14px}
+.list-day-add:hover{background:#e9f3ed;border-color:#b9cfc1}
+.list-day-add:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 .list-view .task-row{padding:14px 0;align-items:center}
 .list-view .task-info{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .list-view .task-info strong{flex:1;min-width:150px;font-size:14px}
