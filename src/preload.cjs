@@ -1,6 +1,6 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('weeklight',{
- get:()=>ipcRenderer.invoke('get'),saveTask:(task,count)=>ipcRenderer.invoke('save-task',task,count),
+ get:()=>ipcRenderer.invoke('get'),saveTask:(task,repeat)=>ipcRenderer.invoke('save-task',task,repeat),
  toggleTask:id=>ipcRenderer.invoke('toggle-task',id),deleteTask:id=>ipcRenderer.invoke('delete-task',id),
  moveTask:(id,date,time)=>ipcRenderer.invoke('move-task',id,date,time),
  reminderAction:(id,action)=>ipcRenderer.invoke('reminder-action',id,action),

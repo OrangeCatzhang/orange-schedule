@@ -8,7 +8,7 @@ const parse=s=>new Date(s+'T12:00:00');const add=(d,n)=>{d=new Date(d);d.setDate
 const monday=d=>add(d,-(d.getDay()+6)%7);const today=()=>key(new Date());
 const cats={work:{name:'工作 / 项目',short:'工作',color:'#6b9b87',bg:'#e9f3ed',ink:'#355e4b'},study:{name:'学习 / 成长',short:'学习',color:'#a195b9',bg:'#f1edf7',ink:'#6b5784'},life:{name:'生活 / 日常',short:'生活',color:'#c6a574',bg:'#fbf1df',ink:'#84602f'}};
 let state,view='calendar',mode='four',anchor=monday(new Date()),selected=today(),mini=new Date(),filter=null,query='',toastTimer,editing=null,busy=false;
-let dragId=null,dragCandidate=false,deferredRender=false;
+let dragId=null,dragCandidate=false,deferredRender=false,repeatEndAuto=true;
 function flushDeferredRender(){if(deferredRender&&!dragId&&!dragCandidate){deferredRender=false;render();}}
 let showCompleted=localStorage.getItem('weeklight.showCompleted')!=='false',listStatus='all';
 const matchesStatus=t=>listStatus==='all'||(listStatus==='done'?t.done:!t.done);
@@ -111,12 +111,25 @@ function renderPanel(){
  $('#day-panel').innerHTML='<div class="day-panel-inner"><div class="panel-heading"><div><div class="panel-eyebrow">'+(selected===today()?'今天':'所选日期')+'</div><h2 class="panel-title">'+fmt(d)+'</h2><div class="panel-subtitle">周'+['日','一','二','三','四','五','六'][d.getDay()]+' · '+ts.length+' 项计划</div></div>'+icon('sun')+'</div><div class="panel-list">'+(ts.length?ts.map(row).join(''):'<div class="empty-panel"><div class="empty-icon">'+icon('leaf')+'</div><p>这一天还没有计划</p><small>点击下方按钮添加</small></div>')+'</div><button class="panel-add" data-new-date="'+selected+'">＋ 为这天添加计划</button></div><div class="week-focus"><h3>'+icon('leaf')+' 这一周的进展</h3><p><strong>'+pct+'<span style="font-size:11px">%</span></strong><span style="float:right;margin-top:10px">'+done+' / '+week.length+' 已完成</span></p><div class="progress-track"><i style="width:'+pct+'%"></i></div></div>';
 }
 function setView(v){view=v;if(v==='today')selected=today();render();}
+function syncRepeatOptions(){
+ const f=$('#task-form'),daily=!editing&&f.elements.repeat.value==='daily',until=f.elements.repeatUntil,start=f.elements.date.value;
+ $('#repeat-until-field').hidden=!daily;until.disabled=!daily;until.required=daily;until.min=start;
+ if(daily&&start&&repeatEndAuto)until.value=key(add(parse(start),29));
+ if(editing)$('#form-hint').textContent='修改仅影响当前这项计划。';
+ else if(daily){
+  const count=start&&until.value?Math.round((parse(until.value)-parse(start))/86400000)+1:0;
+  $('#form-hint').textContent=count>0?'将创建 '+count+' 项每日计划，包含结束当天。每天可分别修改、完成或删除。':'请选择不早于开始日期的结束日期。';
+ }else $('#form-hint').textContent='重复计划会生成独立事项，可分别修改和完成。';
+}
+$('#task-form [name=repeat]').onchange=syncRepeatOptions;
+$('#task-form [name=repeatUntil]').onchange=()=>{repeatEndAuto=false;syncRepeatOptions();};
+$('#task-form [name=date]').onchange=syncRepeatOptions;
 function openEditor(t=null,date=selected,time='09:00'){
- editing=t;const f=$('#task-form');f.reset();
+ editing=t;repeatEndAuto=true;const f=$('#task-form');f.reset();
  f.elements.id.value=t?.id||'';f.elements.title.value=t?.title||'';f.elements.date.value=t?.date||date;f.elements.time.value=t?.time||time;
  for(const n of ['duration','category','reminder','notes'])if(t){if(n==='duration'&&![...f.elements.duration.options].some(o=>o.value===String(t.duration)))f.elements.duration.add(new Option(t.duration+' 分钟',t.duration));f.elements[n].value=t[n];}
  f.elements.priority.checked=t?.priority==='high';$('#editor-title').textContent=t?'编辑计划':'新建计划';$('#repeat-field').hidden=!!t;$('#delete-task').hidden=!t;$('#form-error').textContent='';
- $('#form-hint').textContent=t?'修改仅影响当前这项计划。':'重复计划会生成独立事项，可分别修改和完成。';
+ syncRepeatOptions();
  openDialog($('#editor'));setTimeout(()=>f.elements.title.focus(),50);
 }
 function confirmDelete(t){return new Promise(resolve=>{$('#confirm-text').textContent='“'+t.title+'”将从日历中移除。';openDialog($('#confirm-dialog'));const finish=value=>{$('#confirm-dialog').close();resolve(value);};$('#confirm-no').onclick=()=>finish(false);$('#confirm-yes').onclick=()=>finish(true);$('#confirm-dialog').oncancel=()=>resolve(false);});}
@@ -158,7 +171,7 @@ $('#clear-search').onclick=()=>{query='';$('#search').value='';render();};
 $('#task-form').onsubmit=async e=>{
  e.preventDefault();if(busy)return;busy=true;const submit=e.target.querySelector('[type=submit]');submit.disabled=true;
  const data=Object.fromEntries(new FormData(e.target));data.priority=e.target.elements.priority.checked?'high':'normal';data.done=editing?.done||false;
- try{await api.saveTask(data,editing?1:Number(data.repeat));$('#editor').close();selected=data.date;mini=parse(selected);if(!inRange(data))anchor=monday(mini);if(view==='inbox'||view==='done')view='calendar';render();toast(editing?'计划已更新':'计划已保存');}
+ try{state=await api.saveTask(data,editing?1:data.repeat==='daily'?{frequency:'daily',until:data.repeatUntil}:Number(data.repeat));$('#editor').close();selected=data.date;mini=parse(selected);if(!inRange(data))anchor=monday(mini);if(view==='inbox'||view==='done')view='calendar';render();toast(editing?'计划已更新':'计划已保存');}
  catch(e){$('#form-error').textContent=e.message.replace(/^Error invoking remote method '[^']+': Error: /,'');}
  finally{busy=false;submit.disabled=false;}
 };

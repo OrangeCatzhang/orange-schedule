@@ -23,11 +23,22 @@ function cleanTask(input, existing) {
 function dueTasks(tasks,now=Date.now()) {
   return tasks.filter(t=>!t.done && t.reminder>=0 && (t.snoozeUntil ? t.snoozeUntil<=now : !t.notifiedAt && at(t)-t.reminder*60000<=now)).sort((a,b)=>at(a)-at(b));
 }
-function makeSeries(task, count=1) {
-  if (![1,4,8,12].includes(count)) throw new Error('重复次数不正确');
+function makeSeries(task, repeat=1) {
+  let count=repeat,step=7;
+  if(repeat&&typeof repeat==='object'){
+    if(Array.isArray(repeat)||repeat.frequency!=='daily')throw new Error('重复设置不正确');
+    const until=repeat.until;
+    if(typeof until!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(until)||dateKey(new Date(until+'T12:00:00'))!==until)throw new Error('请选择有效的重复结束日期');
+    if(until<task.date)throw new Error('重复结束日期不能早于开始日期');
+    count=(Date.parse(until+'T00:00:00Z')-Date.parse(task.date+'T00:00:00Z'))/86400000+1;
+    if(!Number.isInteger(count)||count<1||count>10000)throw new Error('每日重复最多生成 10000 项，请缩短日期范围');
+    step=1;
+  }else if(![1,4,8,12].includes(count))throw new Error('重复次数不正确');
   return Array.from({length:count},(_,i)=>{
-    const d=new Date(task.date+'T12:00:00');d.setDate(d.getDate()+7*i);
-    return {...task,id:i?crypto.randomUUID():task.id,date:dateKey(d)};
+    const d=new Date(task.date+'T12:00:00');d.setDate(d.getDate()+step*i);
+    const date=dateKey(d);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('重复日期超出支持范围');
+    return {...task,id:i?crypto.randomUUID():task.id,date};
   });
 }
 function validateState(raw) {
