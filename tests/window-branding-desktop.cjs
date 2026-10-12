@@ -2,7 +2,7 @@ const { _electron: electron } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { randomUUID } = require('node:crypto');
+const { randomUUID, createHash } = require('node:crypto');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const runFile = promisify(execFile);
@@ -24,9 +24,11 @@ async function launch(args = []) {
     : { args: [root, ...args, ...guards], env };
   instance = await electron.launch(options);
   const info = await instance.evaluate(({ app, Notification, net, shell }) => {
-    const state = { notifications: 0, fetches: [], opens: [], loginWrites: [] };
+    const state = { interceptedNotificationAttempts: 0, fetches: [], opens: [], loginWrites: [] };
     globalThis.__brandingTest = state;
-    Notification.prototype.show = function () { state.notifications++; };
+    // Electron can register a Start Menu shortcut in the constructor, before show().
+    // Stop at the capability check so the production notify() never constructs one.
+    Notification.isSupported = () => { state.interceptedNotificationAttempts++; return false; };
     net.fetch = async url => { state.fetches.push(String(url)); throw new Error('Network blocked by isolated branding test'); };
     shell.openExternal = async url => { state.opens.push(String(url)); };
     app.setLoginItemSettings = settings => { state.loginWrites.push(settings); throw new Error('Startup writes blocked by isolated branding test'); };
@@ -113,6 +115,21 @@ async function finishSession(label) {
   instance = null;
 }
 
+async function shortcutFingerprints() {
+  const locations = [process.env.APPDATA, process.env.PROGRAMDATA].filter(Boolean);
+  const files = locations.flatMap(location => ['橙子日程.lnk', 'Electron.lnk'].map(name =>
+    path.join(location, 'Microsoft', 'Windows', 'Start Menu', 'Programs', name)));
+  return Promise.all(files.map(async file => {
+    try {
+      const bytes = await fs.readFile(file);
+      return { path: file, exists: true, sha256: createHash('sha256').update(bytes).digest('hex') };
+    } catch (error) {
+      if (error.code === 'ENOENT') return { path: file, exists: false, sha256: null };
+      throw error;
+    }
+  }));
+}
+
 async function cleanup() {
   const target = path.resolve(dataDir);
   assert.equal(path.dirname(target), workRoot);
@@ -130,8 +147,9 @@ async function cleanup() {
   await fs.mkdir(output, { recursive: true });
   await fs.mkdir(dataDir, { recursive: true });
   await fs.writeFile(path.join(dataDir, 'plans.json'), JSON.stringify({ version: 1, tasks: [], settings: { sound: false, popup: true, checkUpdates: false, widget: { enabled: false, onTop: false } }, history: [] }), 'utf8');
-  let failure, cleaned = false;
+  let failure, cleaned = false, shortcutsBefore, shortcutsAfter, shortcutsUnchanged = false;
   try {
+    shortcutsBefore = await shortcutFingerprints();
     let info = await launch();
     let main = await pageFor('main');
     assert.equal(path.resolve((await main.evaluate(() => window.weeklight.get())).dataDir), dataDir);
@@ -145,11 +163,12 @@ async function cleanup() {
     await main.evaluate(() => window.weeklight.openWidget());
     await pageFor('widget');
     await verifyNative(info, 'three window types', { main: true, reminder: true, widget: true });
-    assert.equal(await instance.evaluate(() => globalThis.__brandingTest.notifications), 1, 'System toast is intercepted');
+    assert.equal(await instance.evaluate(() => globalThis.__brandingTest.interceptedNotificationAttempts), 1, 'System notification attempt is blocked before construction');
     await instance.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(window => window.webContents.getURL().endsWith('/reminder.html')).close());
     await main.evaluate(() => window.weeklight.testReminder());
     await pageFor('reminder');
     await verifyNative(info, 'recreated reminder', { main: true, reminder: true, widget: true });
+    assert.equal(await instance.evaluate(() => globalThis.__brandingTest.interceptedNotificationAttempts), 2, 'Both reminder attempts stop before constructing system notifications');
     await main.evaluate(() => window.weeklight.closeWidget());
     await finishSession('normal startup');
 
@@ -179,12 +198,17 @@ async function cleanup() {
     await finishSession('restart');
     assert.deepEqual(errors, []);
     assert.deepEqual(requests, []);
-    checks.push('all system notifications intercepted; no network, external navigation, or startup registration writes');
+    checks.push('system notification attempts blocked before construction; no network, external navigation, or startup registration writes');
   } catch (error) { failure = error; }
   finally {
     try { if (instance) await instance.close(); } catch (error) { failure ||= error; }
     try { await cleanup(); cleaned = true; } catch (error) { failure ||= error; }
-    const result = { passed: !failure, version: metadata?.version, packaged: metadata?.packaged, checks, nativeWindows, sessions, errors, requests, isolatedDataRemoved: cleaned, error: failure?.stack };
+    try {
+      shortcutsAfter = await shortcutFingerprints();
+      assert.deepEqual(shortcutsAfter, shortcutsBefore, 'Start Menu shortcuts must remain byte-for-byte unchanged');
+      shortcutsUnchanged = true;
+    } catch (error) { failure ||= error; }
+    const result = { passed: !failure, version: metadata?.version, packaged: metadata?.packaged, checks, nativeWindows, sessions, errors, requests, shortcutsBefore, shortcutsAfter, shortcutsUnchanged, isolatedDataRemoved: cleaned, error: failure?.stack };
     await fs.writeFile(path.join(output, 'window-branding-desktop.json'), JSON.stringify(result, null, 2), 'utf8');
     console.log(JSON.stringify(result));
   }
