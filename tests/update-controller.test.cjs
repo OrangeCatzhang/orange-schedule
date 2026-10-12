@@ -161,14 +161,14 @@ test('network failure returns a Chinese error state and automatic failures are t
   });
   const failed = await controller.check({ manual: false });
   assert.equal(failed.phase, 'error');
-  assert.match(failed.error, /无法连接 GitHub/);
+  assert.match(failed.error, /无法连接更新服务/);
   assert.equal(failed.checkedAt, 40);
   assert.equal(failed.release, null);
   clock = 50;
   assert.deepEqual(await controller.check({ manual: false }), failed);
-  assert.equal(calls, 1);
-  await controller.check();
   assert.equal(calls, 2);
+  await controller.check();
+  assert.equal(calls, 4);
   assert.equal(controller.snapshot().checkedAt, 50);
 });
 
@@ -180,7 +180,7 @@ test('retry clears an earlier error while checking and can succeed immediately w
     now: () => clock,
     fetchImpl: () => {
       calls++;
-      return calls === 1 ? Promise.reject(new Error('offline')) : gate.promise;
+      return calls <= 2 ? Promise.reject(new Error('offline')) : gate.promise;
     }
   });
   await controller.check();
@@ -194,7 +194,7 @@ test('retry clears an earlier error while checking and can succeed immediately w
   assert.equal(result.phase, 'available');
   assert.equal(result.error, '');
   assert.equal(result.checkedAt, 20);
-  assert.equal(calls, 2);
+  assert.equal(calls, 3);
 });
 
 test('dismiss has no effect before a release is found and preserves available download metadata', async () => {
@@ -291,7 +291,7 @@ test('failed refresh keeps the last validated release and its dismissal state', 
   assert.equal(failed.phase, 'error');
   assert.equal(failed.checkedAt, 100);
   assert.equal(failed.dismissed, true);
-  assert.match(failed.error, /无法连接 GitHub/);
+  assert.match(failed.error, /无法连接更新服务/);
   assert.deepEqual(failed.release, available.release);
 });
 

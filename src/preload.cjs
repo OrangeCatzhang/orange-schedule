@@ -5,7 +5,7 @@ contextBridge.exposeInMainWorld('weeklight',{
  toggleTask:id=>ipcRenderer.invoke('toggle-task',id),deleteTask:id=>ipcRenderer.invoke('delete-task',id),
  moveTask:(id,date,time)=>ipcRenderer.invoke('move-task',id,date,time),
  reminderAction:(id,action)=>ipcRenderer.invoke('reminder-action',id,action),
- checkUpdates:()=>ipcRenderer.invoke('check-updates'),dismissUpdate:()=>ipcRenderer.invoke('dismiss-update'),downloadUpdate:()=>ipcRenderer.invoke('download-update'),
+ checkUpdates:()=>ipcRenderer.invoke('check-updates'),dismissUpdate:()=>ipcRenderer.invoke('dismiss-update'),downloadUpdate:()=>ipcRenderer.invoke('download-update'),openUpdatePage:()=>ipcRenderer.invoke('open-update-page'),
  settings:s=>ipcRenderer.invoke('settings',s),testReminder:()=>ipcRenderer.invoke('test-reminder'),nextReminderMessage:()=>ipcRenderer.invoke('next-reminder-message'),
  exportData:()=>ipcRenderer.invoke('export'),importData:()=>ipcRenderer.invoke('import'),openData:()=>ipcRenderer.invoke('open-data'),
  openWidget:()=>ipcRenderer.invoke('open-widget'),closeWidget:()=>ipcRenderer.invoke('close-widget'),

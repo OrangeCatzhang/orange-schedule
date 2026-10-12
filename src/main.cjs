@@ -10,6 +10,7 @@ const {createLoginSettings}=require('./login-settings.cjs');
 const loginSettings=createLoginSettings({app,loginItemName:APP_ID});
 const {resolveDataPath}=require('./data-path.cjs');
 const {createUpdateController}=require('./update-controller.cjs');
+const {REPOSITORY_URL}=require('./update-checker.cjs');
 const dataDir=resolveDataPath(app.getPath('userData'),process.env.WEEKLIGHT_DATA_DIR);
 fs.mkdirSync(dataDir,{recursive:true});app.setPath('userData',dataDir);
 app.setAppUserModelId(APP_ID);
@@ -86,6 +87,7 @@ app.whenReady().then(()=>{
  handle('settings',settings=>{if(typeof settings.autostart==='boolean')loginSettings.setOpenAtLogin(settings.autostart);return change(s=>{if(typeof settings.sound==='boolean')s.settings.sound=settings.sound;if(typeof settings.popup==='boolean')s.settings.popup=settings.popup;if(typeof settings.checkUpdates==='boolean')s.settings.checkUpdates=settings.checkUpdates;});});
  handle('check-updates',()=>updateController.check({manual:true}));
  handle('dismiss-update',()=>updateController.dismiss());
+ handle('open-update-page',async()=>{await shell.openExternal(REPOSITORY_URL+'/releases/latest');return true;});
  handle('download-update',async()=>{const release=updateController.snapshot().release;if(!release)throw new Error('请先检查是否有可用更新');await shell.openExternal(release.url);return true;});
  handle('test-reminder',()=>{change(nextReminderMessage);notify('橙子日程提醒已准备好','这是一条测试通知。\n'+notificationEncouragement());showReminder();return true;});
  handle('next-reminder-message',()=>change(nextReminderMessage));

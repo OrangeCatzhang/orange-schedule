@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { RELEASES_API, REPOSITORY_URL, DEFAULT_TIMEOUT_MS, parseVersion, compareVersions, parseRelease, checkForUpdate } = require('../src/update-checker.cjs');
+const { UPDATE_MANIFEST_URL, RELEASES_API, REPOSITORY_URL, DEFAULT_TIMEOUT_MS, parseVersion, compareVersions, parseRelease, checkForUpdate } = require('../src/update-checker.cjs');
 
 function release(version = '1.1.10', overrides = {}) {
   const filename = 'OrangeSchedule-Setup-' + version + '.exe';
@@ -115,16 +115,16 @@ test('invalid response data and current versions fail explicitly', () => {
   assert.throws(() => parseRelease(release(), '1.1.9-beta'), hasCode('INVALID_CURRENT_VERSION'));
 });
 
-test('checks make exactly one request to the fixed API with cancellation and no credentials', async () => {
+test('normal checks read only the public manifest with cancellation and no credentials', async () => {
   const calls = [];
   const result = await check(async (url, options) => { calls.push({ url, options }); return response(); });
   assert.equal(result.version, '1.1.10');
   assert.equal(calls.length, 1);
   const { url, options } = calls[0];
-  assert.equal(url, RELEASES_API);
+  assert.equal(url, UPDATE_MANIFEST_URL);
   assert.equal(options.method, 'GET');
-  assert.equal(options.headers.Accept, 'application/vnd.github+json');
-  assert.equal(options.headers['X-GitHub-Api-Version'], '2026-03-10');
+  assert.equal(options.headers.Accept, 'application/json');
+  assert.equal(options.headers['X-GitHub-Api-Version'], undefined);
   assert.equal(options.headers['User-Agent'], 'OrangeSchedule/1.1.9');
   assert.equal(options.redirect, 'error');
   assert.equal(options.credentials, 'omit');
@@ -185,4 +185,157 @@ test('invalid options are rejected before any network access', async () => {
   for (const timeoutMs of [0, -1, 1.5, '12', Infinity, 60001]) await assert.rejects(check(fetchImpl, { timeoutMs }), hasCode('INVALID_TIMEOUT'));
   await assert.rejects(checkForUpdate({ currentVersion: '1.1.9' }), hasCode('UNSUPPORTED'));
   assert.equal(calls, 0);
+});
+
+
+test('the public manifest succeeds even when the shared anonymous API quota is exhausted', async () => {
+  const calls = [];
+  const result = await check(async url => {
+    calls.push(url);
+    if (url === RELEASES_API) return response(null, 403, { 'x-ratelimit-remaining': '0' });
+    return response();
+  });
+  assert.equal(result.version, '1.1.10');
+  assert.deepEqual(calls, [UPDATE_MANIFEST_URL]);
+});
+
+test('unavailable public files get one fixed API fallback and abort their unread bodies', async () => {
+  for (const status of [301, 403, 404, 429, 500, 503]) {
+    const calls = [];
+    let manifestSignal;
+    const result = await check(async (url, options) => {
+      calls.push(url);
+      if (url === UPDATE_MANIFEST_URL) {
+        manifestSignal = options.signal;
+        return response(null, status);
+      }
+      assert.equal(manifestSignal.aborted, true);
+      assert.equal(url, RELEASES_API);
+      assert.equal(options.headers.Accept, 'application/vnd.github+json');
+      assert.equal(options.headers['X-GitHub-Api-Version'], '2026-03-10');
+      assert.equal(options.credentials, 'omit');
+      assert.equal(options.redirect, 'error');
+      assert.notEqual(options.signal, manifestSignal);
+      return response();
+    });
+    assert.equal(result.version, '1.1.10');
+    assert.deepEqual(calls, [UPDATE_MANIFEST_URL, RELEASES_API]);
+  }
+});
+
+test('an offline manifest or interrupted body can use the API fallback', async () => {
+  for (const failure of [
+    () => { throw new TypeError('DNS failed'); },
+    () => ({ status: 200, json: async () => { throw new TypeError('body disconnected'); } })
+  ]) {
+    const calls = [];
+    assert.equal((await check(async url => {
+      calls.push(url);
+      return url === UPDATE_MANIFEST_URL ? failure() : response();
+    })).version, '1.1.10');
+    assert.deepEqual(calls, [UPDATE_MANIFEST_URL, RELEASES_API]);
+  }
+});
+
+test('a 200 manifest with invalid JSON, metadata or download URLs fails closed without API fallback', async () => {
+  const badUrl = release();
+  badUrl.assets[0].browser_download_url = 'https://evil.example/setup.exe';
+  for (const [fixture, code] of [
+    [{ status: 200, json: async () => { throw new SyntaxError('bad JSON'); } }, 'INVALID_RESPONSE'],
+    [{ status: 200 }, 'INVALID_RESPONSE'],
+    [response({}), 'INVALID_RELEASE'],
+    [response(release('1.1.10', { draft: true })), 'INVALID_RELEASE'],
+    [response(release('1.1.10', { assets: [] })), 'MISSING_INSTALLER'],
+    [response(badUrl), 'INVALID_DOWNLOAD_URL']
+  ]) {
+    const calls = [];
+    await assert.rejects(check(async url => {
+      calls.push(url);
+      return url === UPDATE_MANIFEST_URL ? fixture : response();
+    }), hasCode(code));
+    assert.deepEqual(calls, [UPDATE_MANIFEST_URL]);
+  }
+});
+
+test('a valid current manifest does not use the API to search for another version', async () => {
+  const calls = [];
+  assert.equal(await check(async url => {
+    calls.push(url);
+    return response(release('1.1.9'));
+  }), null);
+  assert.deepEqual(calls, [UPDATE_MANIFEST_URL]);
+});
+
+test('a slow manifest is aborted before the API fallback starts', { timeout: 1000 }, async () => {
+  for (const pendingBody of [false, true]) {
+    const calls = [];
+    let manifestSignal;
+    const result = await check(async (url, options) => {
+      calls.push(url);
+      if (url === UPDATE_MANIFEST_URL) {
+        manifestSignal = options.signal;
+        return pendingBody ? { status: 200, json: () => new Promise(() => {}) } : new Promise(() => {});
+      }
+      assert.equal(manifestSignal.aborted, true);
+      assert.equal(options.signal.aborted, false);
+      return response();
+    }, { timeoutMs: 100 });
+    assert.equal(result.version, '1.1.10');
+    assert.deepEqual(calls, [UPDATE_MANIFEST_URL, RELEASES_API]);
+  }
+});
+
+test('two stalled sources share one total timeout budget and both requests are aborted', async t => {
+  const calls = [];
+  const signals = [];
+  const timers = [];
+  let monotonicTime = 1000;
+  t.mock.method(require('node:perf_hooks').performance, 'now', () => monotonicTime);
+  t.mock.method(globalThis, 'setTimeout', (callback, delay) => {
+    const timer = { callback, delay, cleared: false };
+    timers.push(timer);
+    return timer;
+  });
+  t.mock.method(globalThis, 'clearTimeout', timer => { timer.cleared = true; });
+  const rejected = assert.rejects(check(async (url, options) => {
+    calls.push(url);
+    signals.push(options.signal);
+    return { status: 200, json: () => new Promise(() => {}) };
+  }, { timeoutMs: 160 }), hasCode('TIMEOUT'));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(timers.length, 1);
+  assert.equal(timers[0].delay, 80);
+  monotonicTime += 80;
+  timers[0].callback();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(timers.length, 2);
+  assert.equal(timers[1].delay, 80, 'fallback only receives the remaining total budget');
+  monotonicTime += 80;
+  timers[1].callback();
+  await rejected;
+  assert.deepEqual(calls, [UPDATE_MANIFEST_URL, RELEASES_API]);
+  assert.ok(signals.every(signal => signal.aborted));
+  assert.ok(timers.every(timer => timer.cleared));
+});
+
+test('API fallback errors stop after two requests and explain the manual download path', async () => {
+  const calls = [];
+  await assert.rejects(check(async url => {
+    calls.push(url);
+    return url === UPDATE_MANIFEST_URL ? response(null, 503) : response(null, 403, { 'x-ratelimit-remaining': '0' });
+  }), error => hasCode('RATE_LIMITED')(error) && error.message.includes('官方下载页') && !error.message.includes('次数已达'));
+  assert.deepEqual(calls, [UPDATE_MANIFEST_URL, RELEASES_API]);
+});
+
+test('a late timed-out response never reads its body or replaces the fallback result', { timeout: 1000 }, async () => {
+  let completeManifest;
+  let readLateBody = false;
+  const result = await check(async url => {
+    if (url === UPDATE_MANIFEST_URL) return new Promise(resolve => { completeManifest = resolve; });
+    return response();
+  }, { timeoutMs: 100 });
+  completeManifest({ status: 200, json: async () => { readLateBody = true; return release('99.0.0'); } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(result.version, '1.1.10');
+  assert.equal(readLateBody, false);
 });

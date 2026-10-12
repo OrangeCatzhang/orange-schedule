@@ -9,6 +9,7 @@ const workRoot = path.join(root, '_work');
 const dataDir = path.join(workRoot, 'update-ui-' + randomUUID());
 const output = path.join(root, 'outputs', 'verification');
 const apiUrl = 'https://api.github.com/repos/OrangeCatzhang/orange-schedule/releases/latest';
+const manifestUrl = 'https://raw.githubusercontent.com/OrangeCatzhang/orange-schedule/main/docs/updates/latest.json';
 const repositoryUrl = 'https://github.com/OrangeCatzhang/orange-schedule';
 const notes = '更新摘要：日历与提醒更顺手。\n\n• 调整计划更方便。\n• 保留所有本机计划。\n\n说明原文：<b id="update-note-html">标记也按纯文本显示</b>\n<img src="https://invalid.example/update-test.png" onerror="window.__updateNotesExecuted=true">';
 const env = { ...process.env, WEEKLIGHT_DATA_DIR: dataDir };
@@ -52,12 +53,15 @@ async function installMocks(instance, mode) {
     };
     net.fetch = async (url, options = {}) => {
       test.calls.push({ url: String(url), method: options.method, mode: test.mode });
-      if (String(url) !== config.apiUrl) {
+      if (![config.manifestUrl, config.apiUrl].includes(String(url))) {
         test.unexpected.push(String(url));
         throw new Error('Unexpected network target blocked by test');
       }
       const modeAtStart = test.mode;
-      if (modeAtStart === 'offline') throw new Error('Simulated offline connection');
+      if (modeAtStart === 'offline' || (['manifest-offline', 'both-fail'].includes(modeAtStart) && String(url) === config.manifestUrl)) throw new Error('Simulated offline connection');
+      if (['api-limited', 'both-fail'].includes(modeAtStart) && String(url) === config.apiUrl) {
+        return { status: 403, headers: { get: name => name === 'x-ratelimit-remaining' ? '0' : null } };
+      }
       const version = modeAtStart === 'current' ? currentVersion : nextVersion;
       const filename = 'OrangeSchedule-Setup-' + version + '.exe';
       const officialUrl = config.repositoryUrl + '/releases/download/v' + version + '/' + filename;
@@ -73,7 +77,7 @@ async function installMocks(instance, mode) {
     };
     shell.openExternal = async url => { test.opens.push(String(url)); };
     return { version: currentVersion, nextVersion, packaged: app.isPackaged, patchedAtUptimeMs: process.uptime() * 1000 };
-  }, { mode, apiUrl, repositoryUrl, notes });
+  }, { mode, apiUrl, manifestUrl, repositoryUrl, notes });
 }
 
 async function getMainPage(instance) {
@@ -211,11 +215,14 @@ async function cleanup() {
     assert.equal((await mockState(instance)).opens.length, 0);
     checks.push('manual checking recognizes the current release and blocks downloads without an update');
 
-    await setMode(instance, 'available');
+    const primaryStart = (await mockState(instance)).calls.length;
+    await setMode(instance, 'api-limited');
     const available = await checkViaUi(instance, main, 'available');
     const expectedUrl = repositoryUrl + '/releases/download/v' + metadata.nextVersion + '/OrangeSchedule-Setup-' + metadata.nextVersion + '.exe';
     assert.equal(available.release.version, metadata.nextVersion);
     assert.equal(available.release.url, expectedUrl);
+    assert.deepEqual((await mockState(instance)).calls.slice(primaryStart).map(call => call.url), [manifestUrl]);
+    checks.push('the public version file discovers an update without using the rate-limited GitHub API');
     await closeSettings(main);
     await main.locator('#update-banner').waitFor({ state: 'visible' });
     assert((await main.locator('#update-banner-title').innerText()).includes(metadata.nextVersion));
@@ -258,14 +265,34 @@ async function cleanup() {
     checks.push('a new manual check restores a previously dismissed prompt');
 
     await openSettings(main);
+    const fallbackStart = (await mockState(instance)).calls.length;
+    await setMode(instance, 'manifest-offline');
+    const fallback = await checkViaUi(instance, main, 'available');
+    assert.equal(fallback.release.url, expectedUrl);
+    assert.deepEqual((await mockState(instance)).calls.slice(fallbackStart).map(call => call.url), [manifestUrl, apiUrl]);
+    checks.push('an unreachable public version file falls back to the official GitHub API once');
+
     await setMode(instance, 'offline');
     const offline = await checkViaUi(instance, main, 'error');
-    assert.match(offline.error, /无法连接 GitHub/);
+    assert.match(offline.error, /网络|连接/);
     assert.equal(offline.release.url, expectedUrl);
-    assert.match(await main.locator('#update-status').innerText(), /无法连接 GitHub/);
+    assert.match(await main.locator('#update-status').innerText(), /网络|连接/);
     assert.equal(await main.locator('#update-details').evaluate(details => details.hidden), false);
     await clickDownload(instance, main, expectedUrl);
     checks.push('offline errors are readable and preserve a previously validated downloadable release');
+
+    const bothFailStart = (await mockState(instance)).calls.length;
+    await setMode(instance, 'both-fail');
+    const bothFailed = await checkViaUi(instance, main, 'error');
+    assert.match(bothFailed.error, /限制|限流/);
+    assert.deepEqual((await mockState(instance)).calls.slice(bothFailStart).map(call => call.url), [manifestUrl, apiUrl]);
+    const pageOpens = (await mockState(instance)).opens.length;
+    await main.locator('#open-update-page').click();
+    await main.waitForFunction(() => !document.querySelector('#open-update-page').disabled);
+    await main.evaluate(() => window.weeklight.openUpdatePage('https://invalid.example/injected.exe'));
+    const officialPageOpens = (await mockState(instance)).opens.slice(pageOpens);
+    assert.deepEqual(officialPageOpens, [repositoryUrl + '/releases/latest', repositoryUrl + '/releases/latest']);
+    checks.push('when both sources fail, the manual page button and forged renderer argument only open the fixed official releases page');
 
     await setAutomaticUpdates(main, true);
     sessions.push(await mockState(instance));
@@ -285,6 +312,7 @@ async function cleanup() {
     native = await mockState(instance);
     assert.equal(native.calls.length, 1);
     assert.equal(native.calls[0].mode, 'current');
+    assert.equal(native.calls[0].url, manifestUrl);
     assert.equal(native.opens.length, 0);
     checks.push('the enabled checkbox survives restart and the startup timer checks the mocked release once');
     assert.equal(native.updateIntervals.length, 1, 'Register the recurring timer after the initial check rather than before it');
@@ -324,15 +352,23 @@ async function cleanup() {
 
     native = await mockState(instance);
     assert.equal(native.calls.length, 1);
+    assert.equal(native.calls[0].url, manifestUrl);
+    assert.equal(await main.locator('#open-update-page').isVisible(), true);
+    await main.locator('#open-update-page').click();
+    await main.waitForFunction(() => !document.querySelector('#open-update-page').disabled);
+    native = await mockState(instance);
+    assert.deepEqual(native.opens, [repositoryUrl + '/releases/latest']);
+    checks.push('the official page remains available with no validated update and malformed metadata never triggers an API fallback');
     sessions.push(native);
-    assert(sessions.flatMap(session => session.calls).every(call => call.url === apiUrl && call.method === 'GET'));
+    assert(sessions.flatMap(session => session.calls).every(call => [manifestUrl, apiUrl].includes(call.url) && call.method === 'GET'));
     assert(sessions.every(session => session.unexpected.length === 0));
-    assert(sessions.flatMap(session => session.opens).every(url => url === expectedUrl));
+    assert(sessions.flatMap(session => session.opens).every(url => [expectedUrl, repositoryUrl + '/releases/latest'].includes(url)));
     assert.deepEqual(rendererErrors, []);
     assert.deepEqual(rendererRequests, []);
-    checks.push('all update requests use the fixed mocked API and every external action is intercepted');
+    checks.push('all update requests use the two fixed mocked endpoints and every external action is intercepted');
   } catch (error) {
     failure = error;
+    if (instance) { try { sessions.push(await mockState(instance)); } catch {} }
   } finally {
     try { if (instance) await instance.close(); } catch (error) { failure ||= error; }
     try { await cleanup(); cleaned = true; } catch (error) { failure ||= error; }
