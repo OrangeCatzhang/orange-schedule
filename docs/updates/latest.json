@@ -1,0 +1,15 @@
+{
+  "tag_name": "v1.1.10",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2026-10-12T07:07:00.000Z",
+  "body": "橙子日程 1.1.10 更新应用图标，让名称、界面与 Windows 快捷方式保持一致。\n\n### 橙子日历新图标\n- 用橙色日历主体、绿色橙叶与白色完成勾选，表达「橙子日程」和待办规划。\n- 主界面、桌面便签、窗口、系统通知、托盘、Windows 应用和安装器统一使用新图标。\n- ICO 包含 16、20、24、32、40、48、64、128、256 像素帧，保留透明背景，适配不同显示缩放。\n\n### 安装与更新\n- 1.1.9 用户可在「设置与备份 → 检查更新」查看此版本并打开安装包下载。\n- 也可直接下载 OrangeSchedule-Setup-1.1.10.exe，从托盘退出旧版后安装到原位置。\n- 沿用原应用身份、数据目录和安装标识，原有计划与设置保留。\n- 此版本仅更新图标与版本信息；重复任务、提醒和升级检查行为保持不变。\n\n已检查图标小尺寸、浅色与深色背景、Windows EXE / 安装器内嵌资源，以及打包程序启动和数据重启恢复。安装包尚无商业代码签名，SHA256SUMS.txt 可用于文件完整性校验。",
+  "assets": [
+    {
+      "name": "OrangeSchedule-Setup-1.1.10.exe",
+      "state": "uploaded",
+      "size": 111837931,
+      "browser_download_url": "https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.10/OrangeSchedule-Setup-1.1.10.exe"
+    }
+  ]
+}
