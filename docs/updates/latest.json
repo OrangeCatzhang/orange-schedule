@@ -1,15 +1,15 @@
 {
-  "tag_name": "v1.1.11",
+  "tag_name": "v1.1.12",
   "draft": false,
   "prerelease": false,
-  "published_at": "2026-10-12T07:28:35.000Z",
-  "body": "橙子日程 1.1.11 修复检查更新容易受到 GitHub 匿名接口限流的问题。\r\n\r\n### 更新检查\r\n- 正常检查优先读取仓库的公开版本文件，不使用匿名 Releases API 配额；文件不可达时再尝试一次 API。\r\n- 设置页增加常驻「打开官方下载页」入口，即使自动检查失败也能手动查看版本与下载安装包。\r\n- 保留每 6 小时自动检查、手动检查、关闭自动检查和官方安装包地址校验。两个来源共用 12 秒等待预算。\r\n- 限流提示改为说明当前网络请求受限，避免误以为是用户点击次数过多。\r\n\r\n### 安装与图标\r\n- 下载 OrangeSchedule-Setup-1.1.11.exe，从托盘退出旧版后安装到原位置。\r\n- 1.1.9 / 1.1.10 若已经无法检查更新，需要通过此发布页手动升级一次；更早版本同样可以直接安装此版。\r\n- 延续橙色日历、绿色橙叶和白色勾选的新图标，应用与安装器均已核验内嵌图标。\r\n- 沿用原应用身份、数据目录和安装标识，保留已有计划与设置。\r\n\r\n公开版本文件仍可能受网络或服务访问限制；本次修复减少对匿名 API 配额的依赖，不代表所有联网请求都不会失败。\r\n\r\n验证：142 项单元测试、打包后的 16 组更新桌面回归、程序启动与测试数据重启恢复、打包源码一致性及 Windows EXE 图标检查通过。安装包尚无商业代码签名，SHA256SUMS.txt 用于完整性校验。",
+  "published_at": "2026-10-12T08:12:30.000Z",
+  "body": "橙子日程 1.1.12：完善 Windows 任务栏图标\n\n- 在主日历、提醒窗口和桌面便签出现前，统一设置橙子日历图标及任务栏信息。\n- 先写入图标和重新启动信息，再设置原有应用标识，让任务栏读取完整配置。\n- 安装包包含独立的多尺寸 ICO 文件，供 Windows 直接读取。\r\n- 开发版与正式版使用不同任务栏标识，防止开发版 Electron 快捷方式覆盖正式版名称和图标。\n- 保留原有计划数据、重复事项、提醒、开机启动与桌面便签设置。\n\n安装：下载 OrangeSchedule-Setup-1.1.12.exe，保存正在编辑的计划后安装。升级完成后重新启动橙子日程。Windows 10 / 11 x64。\n\n验证：150 项单元测试、9 组 Windows 原生窗口测试；安装包源码一致性检查通过，已在 Windows 10 本机安装后确认任务栏显示橙子日历图标。SHA256SUMS.txt 提供安装包 SHA-256 校验值。",
   "assets": [
     {
-      "name": "OrangeSchedule-Setup-1.1.11.exe",
+      "name": "OrangeSchedule-Setup-1.1.12.exe",
       "state": "uploaded",
-      "size": 111838551,
-      "browser_download_url": "https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.11/OrangeSchedule-Setup-1.1.11.exe"
+      "size": 111937553,
+      "browser_download_url": "https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.12/OrangeSchedule-Setup-1.1.12.exe"
     }
   ]
 }

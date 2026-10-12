@@ -12,13 +12,13 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ## 下载与安装
 
-**[下载 Windows 安装包（1.1.11，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.11/OrangeSchedule-Setup-1.1.11.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
+**[下载 Windows 安装包（1.1.12，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.12/OrangeSchedule-Setup-1.1.12.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 源码托管在 GitHub，安装 EXE 通过 GitHub Releases 公开分发，不进入源码仓库。
 
 下载安装包后直接运行，按提示选择安装位置。终端用户无需安装 Node.js 或编译工具。安装版可创建桌面与开始菜单快捷方式，并可在设置中启用开机启动。
 
-当前版本 **1.1.11**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
+当前版本 **1.1.12**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
 
 ## 功能
 
@@ -76,7 +76,7 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 从 1.1.11 起，检查优先读取仓库的公开版本文件，读取失败时才尝试一次 GitHub Releases API，减少对匿名 API 共享配额的依赖。公开文件仍可能受网络或访问限制影响；如果两个来源都失败，设置页会显示原因，并始终保留「打开官方下载页」入口。计划与提醒继续工作，检查失败不会改动本地计划。
 
-**1.1.8 及更早版本没有升级检查功能，需要手动安装当前版本。1.1.9 / 1.1.10 若提示 GitHub 检查次数受限，也请从本页下载并手动升级至 1.1.11 一次，新版才会使用公开版本文件。**
+**1.1.8 及更早版本没有升级检查功能，需要手动安装当前版本。1.1.9 / 1.1.10 若提示 GitHub 检查次数受限，也请从本页下载并手动升级至 1.1.12 一次，新版才会使用公开版本文件。**
 
 ### 名言警句与诗词提醒
 
@@ -118,9 +118,13 @@ GitHub 提供匿名访问，但其 REST API 通常按公网 IP 共享每小时 6
 
 请升级至 1.1.11 或更高版本。新版优先读取公开版本文件，正常检查不调用 Releases API，无需登录或提供密钥；无法联网检查时，可以在设置中打开官方下载页。公开文件也受网络和服务访问限制影响，并非无限制服务。
 
+### 任务栏仍显示 Electron 或旧图标
+
+1.1.12 已统一窗口和任务栏图标，并分离开发版与正式版的任务栏标识。升级后请从托盘退出旧版再启动；如果手动固定过旧版快捷方式，可取消固定后从开始菜单重新固定。
+
 ### 下载的 EXE 是安装包还是单文件程序
 
-下载的 `OrangeSchedule-Setup-1.1.11.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
+下载的 `OrangeSchedule-Setup-1.1.12.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
 
 ## 数据与隐私
 
@@ -160,9 +164,10 @@ npm run test:daily
 npm run test:weekdays
 npm run test:series
 npm run test:updates
+npm run test:branding
 ```
 
-桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.11/`：`OrangeSchedule-Setup-1.1.11.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
+桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.12/`：`OrangeSchedule-Setup-1.1.12.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
 
 `npm run test:ui` 提供额外的主日历回归验证。可选的 `scripts/prepare-runtime.cjs` 用于离线准备 Electron，需要 Python 和匹配校验值的官方 Electron ZIP；正常 `npm ci` 不需要运行它。
 
