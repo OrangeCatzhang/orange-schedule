@@ -26,6 +26,8 @@ test('reminder catalogue has at least 100 distinct messages with usable display 
       assert.ok(message[key].trim().length > 0, `${message.id}: ${key} cannot be empty`);
       assert.equal(message[key], message[key].trim(), `${message.id}: ${key} has outer whitespace`);
     }
+    assert.ok(message.url, `${message.id}: every classic needs its original source link`);
+    assert.notEqual(message.source, '橙子日程');
     if (message.url !== undefined) {
       const url = new URL(message.url);
       assert.ok(['http:', 'https:'].includes(url.protocol), `${message.id}: invalid source link`);
@@ -167,4 +169,19 @@ test('core validation accepts old backups and cleans broken rotation fields with
   const restored = validateState({ version: 1, tasks: [], settings: { sound: false, reminderRotation } });
   assert.deepEqual(restored.settings.reminderRotation, { seen: [currentId, catalogueIds[5]], currentId });
   assert.equal(restored.settings.sound, false);
+});
+
+
+test('upgrading the original-copy catalogue keeps classic progress and discards retired IDs', () => {
+  const rotation = normalizeRotation({
+    seen: ['original-001', 'classic-001', 'original-099', 'classic-020'],
+    currentId: 'original-099'
+  });
+  assert.deepEqual(rotation, { seen: ['classic-001', 'classic-020'], currentId: null });
+  assert.equal(getCurrentMessage(rotation).id, 'classic-001');
+  const next = advanceMessage(rotation, () => 0);
+  assert.ok(!rotation.seen.includes(next.message.id));
+  assert.ok(next.message.url);
+  const classicCurrent = normalizeRotation({ seen: ['original-001'], currentId: 'classic-020' });
+  assert.deepEqual(classicCurrent, { seen: ['classic-020'], currentId: 'classic-020' });
 });

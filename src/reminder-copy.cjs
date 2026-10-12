@@ -1,6 +1,5 @@
 const {randomInt}=require('node:crypto');
 const messages=Object.freeze([
-  ...require('./reminder-originals.json'),
   ...require('./reminder-classics.json')
 ].map(message=>Object.freeze({...message})));
 const byId=new Map(messages.map(message=>[message.id,message]));

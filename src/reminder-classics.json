@@ -118,5 +118,605 @@
     "text": "莫听穿林打叶声，何妨吟啸且徐行。",
     "source": "《定风波·莫听穿林打叶声》",
     "url": "https://zh.wikisource.org/wiki/定風波_(莫聽穿林打葉聲)"
+  },
+  {
+    "id": "classic-021",
+    "text": "有朋自远方来，不亦乐乎？",
+    "source": "《论语·学而》",
+    "url": "https://zh.wikisource.org/wiki/論語/學而第一"
+  },
+  {
+    "id": "classic-022",
+    "text": "敏于事而慎于言，就有道而正焉。",
+    "source": "《论语·学而》",
+    "url": "https://zh.wikisource.org/wiki/論語/學而第一"
+  },
+  {
+    "id": "classic-023",
+    "text": "见贤思齐焉，见不贤而内自省也。",
+    "source": "《论语·里仁》",
+    "url": "https://zh.wikisource.org/wiki/論語/里仁第四"
+  },
+  {
+    "id": "classic-024",
+    "text": "敏而好学，不耻下问。",
+    "source": "《论语·公冶长》",
+    "url": "https://zh.wikisource.org/wiki/論語/公冶長第五"
+  },
+  {
+    "id": "classic-025",
+    "text": "己欲立而立人，己欲达而达人。",
+    "source": "《论语·雍也》",
+    "url": "https://zh.wikisource.org/wiki/論語/雍也第六"
+  },
+  {
+    "id": "classic-026",
+    "text": "学而不厌，诲人不倦。",
+    "source": "《论语·述而》",
+    "url": "https://zh.wikisource.org/wiki/論語/述而第七"
+  },
+  {
+    "id": "classic-027",
+    "text": "君子成人之美，不成人之恶。",
+    "source": "《论语·颜渊》",
+    "url": "https://zh.wikisource.org/wiki/論語/顏淵第十二"
+  },
+  {
+    "id": "classic-028",
+    "text": "工欲善其事，必先利其器。",
+    "source": "《论语·卫灵公》",
+    "url": "https://zh.wikisource.org/wiki/論語/衛靈公第十五"
+  },
+  {
+    "id": "classic-029",
+    "text": "当仁，不让于师。",
+    "source": "《论语·卫灵公》",
+    "url": "https://zh.wikisource.org/wiki/論語/衛靈公第十五"
+  },
+  {
+    "id": "classic-030",
+    "text": "友直，友谅，友多闻，益矣。",
+    "source": "《论语·季氏》",
+    "url": "https://zh.wikisource.org/wiki/論語/季氏第十六"
+  },
+  {
+    "id": "classic-031",
+    "text": "博学而笃志，切问而近思，仁在其中矣。",
+    "source": "《论语·子张》",
+    "url": "https://zh.wikisource.org/wiki/論語/子張第十九"
+  },
+  {
+    "id": "classic-032",
+    "text": "君子以文会友，以友辅仁。",
+    "source": "《论语·颜渊》",
+    "url": "https://zh.wikisource.org/wiki/論語/顏淵第十二"
+  },
+  {
+    "id": "classic-033",
+    "text": "老吾老，以及人之老；幼吾幼，以及人之幼。",
+    "source": "《孟子·梁惠王上》",
+    "url": "https://zh.wikisource.org/wiki/孟子/梁惠王上"
+  },
+  {
+    "id": "classic-034",
+    "text": "乐民之乐者，民亦乐其乐。",
+    "source": "《孟子·梁惠王下》",
+    "url": "https://zh.wikisource.org/wiki/孟子/梁惠王下"
+  },
+  {
+    "id": "classic-035",
+    "text": "君子莫大乎与人为善。",
+    "source": "《孟子·公孙丑上》",
+    "url": "https://zh.wikisource.org/wiki/孟子/公孫丑上"
+  },
+  {
+    "id": "classic-036",
+    "text": "人皆可以为尧舜。",
+    "source": "《孟子·告子下》",
+    "url": "https://zh.wikisource.org/wiki/孟子/告子下"
+  },
+  {
+    "id": "classic-037",
+    "text": "仁者爱人，有礼者敬人。",
+    "source": "《孟子·离娄下》",
+    "url": "https://zh.wikisource.org/wiki/孟子/離婁下"
+  },
+  {
+    "id": "classic-038",
+    "text": "爱人者人恒爱之，敬人者人恒敬之。",
+    "source": "《孟子·离娄下》",
+    "url": "https://zh.wikisource.org/wiki/孟子/離婁下"
+  },
+  {
+    "id": "classic-039",
+    "text": "仰不愧于天，俯不怍于人。",
+    "source": "《孟子·尽心上》",
+    "url": "https://zh.wikisource.org/wiki/孟子/盡心上"
+  },
+  {
+    "id": "classic-040",
+    "text": "亲亲而仁民，仁民而爱物。",
+    "source": "《孟子·尽心上》",
+    "url": "https://zh.wikisource.org/wiki/孟子/盡心上"
+  },
+  {
+    "id": "classic-041",
+    "text": "青，取之于蓝而青于蓝。",
+    "source": "《荀子·劝学》",
+    "url": "https://zh.wikisource.org/wiki/荀子/勸學篇"
+  },
+  {
+    "id": "classic-042",
+    "text": "君子博学而日参省乎己，则知明而行无过矣。",
+    "source": "《荀子·劝学》",
+    "url": "https://zh.wikisource.org/wiki/荀子/勸學篇"
+  },
+  {
+    "id": "classic-043",
+    "text": "吾尝终日而思矣，不如须臾之所学也。",
+    "source": "《荀子·劝学》",
+    "url": "https://zh.wikisource.org/wiki/荀子/勸學篇"
+  },
+  {
+    "id": "classic-044",
+    "text": "君子生非异也，善假于物也。",
+    "source": "《荀子·劝学》",
+    "url": "https://zh.wikisource.org/wiki/荀子/勸學篇"
+  },
+  {
+    "id": "classic-045",
+    "text": "积土成山，风雨兴焉；积水成渊，蛟龙生焉。",
+    "source": "《荀子·劝学》",
+    "url": "https://zh.wikisource.org/wiki/荀子/勸學篇"
+  },
+  {
+    "id": "classic-046",
+    "text": "不积跬步，无以至千里。",
+    "source": "《荀子·劝学》",
+    "url": "https://zh.wikisource.org/wiki/荀子/勸學篇"
+  },
+  {
+    "id": "classic-047",
+    "text": "道虽迩，不行不至；事虽小，不为不成。",
+    "source": "《荀子·修身》",
+    "url": "https://zh.wikisource.org/wiki/荀子/修身篇"
+  },
+  {
+    "id": "classic-048",
+    "text": "闻之不若见之，见之不若知之，知之不若行之。",
+    "source": "《荀子·儒效》",
+    "url": "https://zh.wikisource.org/wiki/荀子/儒效篇"
+  },
+  {
+    "id": "classic-049",
+    "text": "玉不琢，不成器；人不学，不知道。",
+    "source": "《礼记·学记》",
+    "url": "https://zh.wikisource.org/wiki/禮記/學記"
+  },
+  {
+    "id": "classic-050",
+    "text": "学然后知不足，教然后知困。",
+    "source": "《礼记·学记》",
+    "url": "https://zh.wikisource.org/wiki/禮記/學記"
+  },
+  {
+    "id": "classic-051",
+    "text": "知不足，然后能自反也；知困，然后能自强也。",
+    "source": "《礼记·学记》",
+    "url": "https://zh.wikisource.org/wiki/禮記/學記"
+  },
+  {
+    "id": "classic-052",
+    "text": "善歌者使人继其声，善教者使人继其志。",
+    "source": "《礼记·学记》",
+    "url": "https://zh.wikisource.org/wiki/禮記/學記"
+  },
+  {
+    "id": "classic-053",
+    "text": "道而弗牵，强而弗抑，开而弗达。",
+    "source": "《礼记·学记》",
+    "url": "https://zh.wikisource.org/wiki/禮記/學記"
+  },
+  {
+    "id": "classic-054",
+    "text": "物有本末，事有终始，知所先后，则近道矣。",
+    "source": "《礼记·大学》",
+    "url": "https://zh.wikisource.org/wiki/禮記/大學"
+  },
+  {
+    "id": "classic-055",
+    "text": "万物并育而不相害，道并行而不相悖。",
+    "source": "《礼记·中庸》",
+    "url": "https://zh.wikisource.org/wiki/禮記/中庸"
+  },
+  {
+    "id": "classic-056",
+    "text": "大学之道，在明明德，在亲民，在止于至善。",
+    "source": "《礼记·大学》",
+    "url": "https://zh.wikisource.org/wiki/禮記/大學"
+  },
+  {
+    "id": "classic-057",
+    "text": "上善若水，水善利万物而不争。",
+    "source": "《老子·第八章》",
+    "url": "https://zh.wikisource.org/wiki/道德經_(王弼本)#八章"
+  },
+  {
+    "id": "classic-058",
+    "text": "为学日益，为道日损。",
+    "source": "《老子·第四十八章》",
+    "url": "https://zh.wikisource.org/wiki/道德經_(王弼本)#四十八章"
+  },
+  {
+    "id": "classic-059",
+    "text": "胜人者有力，自胜者强。",
+    "source": "《老子·第三十三章》",
+    "url": "https://zh.wikisource.org/wiki/道德經_(王弼本)#三十三章"
+  },
+  {
+    "id": "classic-060",
+    "text": "大成若缺，其用不弊；大盈若冲，其用不穷。",
+    "source": "《老子·第四十五章》",
+    "url": "https://zh.wikisource.org/wiki/道德經_(王弼本)#四十五章"
+  },
+  {
+    "id": "classic-061",
+    "text": "天下难事，必作于易；天下大事，必作于细。",
+    "source": "《老子·第六十三章》",
+    "url": "https://zh.wikisource.org/wiki/道德經_(王弼本)#六十三章"
+  },
+  {
+    "id": "classic-062",
+    "text": "合抱之木，生于毫末；九层之台，起于累土。",
+    "source": "《老子·第六十四章》",
+    "url": "https://zh.wikisource.org/wiki/道德經_(王弼本)#六十四章"
+  },
+  {
+    "id": "classic-063",
+    "text": "慎终如始，则无败事。",
+    "source": "《老子·第六十四章》",
+    "url": "https://zh.wikisource.org/wiki/道德經_(王弼本)#六十四章"
+  },
+  {
+    "id": "classic-064",
+    "text": "君子以见善则迁，有过则改。",
+    "source": "《周易·益·象》",
+    "url": "https://zh.wikisource.org/wiki/周易/益"
+  },
+  {
+    "id": "classic-065",
+    "text": "二人同心，其利断金；同心之言，其臭如兰。",
+    "source": "《周易·系辞上》",
+    "url": "https://zh.wikisource.org/wiki/周易/繫辭上"
+  },
+  {
+    "id": "classic-066",
+    "text": "君子以朋友讲习。",
+    "source": "《周易·兑·象》",
+    "url": "https://zh.wikisource.org/wiki/周易/兌"
+  },
+  {
+    "id": "classic-067",
+    "text": "穷则变，变则通，通则久。",
+    "source": "《周易·系辞下》",
+    "url": "https://zh.wikisource.org/wiki/周易/繫辭下"
+  },
+  {
+    "id": "classic-068",
+    "text": "君子以多识前言往行，以畜其德。",
+    "source": "《周易·大畜·象》",
+    "url": "https://zh.wikisource.org/wiki/周易/大畜"
+  },
+  {
+    "id": "classic-069",
+    "text": "静以修身，俭以养德。",
+    "source": "《诫子书》",
+    "url": "https://zh.wikisource.org/wiki/誡子書"
+  },
+  {
+    "id": "classic-070",
+    "text": "非澹泊无以明志，非宁静无以致远。",
+    "source": "《诫子书》",
+    "url": "https://zh.wikisource.org/wiki/誡子書"
+  },
+  {
+    "id": "classic-071",
+    "text": "明月松间照，清泉石上流。",
+    "source": "《山居秋暝》",
+    "url": "https://zh.wikisource.org/wiki/山居秋暝"
+  },
+  {
+    "id": "classic-072",
+    "text": "返景入深林，复照青苔上。",
+    "source": "《鹿柴》",
+    "url": "https://zh.wikisource.org/wiki/輞川集_(王維)/鹿柴"
+  },
+  {
+    "id": "classic-073",
+    "text": "独坐幽篁里，弹琴复长啸。深林人不知，明月来相照。",
+    "source": "《竹里馆》",
+    "url": "https://zh.wikisource.org/wiki/輞川集_(王維)/竹里館"
+  },
+  {
+    "id": "classic-074",
+    "text": "桃红复含宿雨，柳绿更带朝烟。",
+    "source": "《田园乐七首·其六》",
+    "url": "https://zh.wikisource.org/wiki/田園樂_(桃紅復含宿雨)"
+  },
+  {
+    "id": "classic-075",
+    "text": "漠漠水田飞白鹭，阴阴夏木啭黄鹂。",
+    "source": "《积雨辋川庄作》",
+    "url": "https://zh.wikisource.org/wiki/積雨輞川莊作"
+  },
+  {
+    "id": "classic-076",
+    "text": "绿树村边合，青山郭外斜。",
+    "source": "《过故人庄》",
+    "url": "https://zh.wikisource.org/wiki/過故人莊"
+  },
+  {
+    "id": "classic-077",
+    "text": "故人具鸡黍，邀我至田家。",
+    "source": "《过故人庄》",
+    "url": "https://zh.wikisource.org/wiki/過故人莊"
+  },
+  {
+    "id": "classic-078",
+    "text": "两岸猿声啼不住，轻舟已过万重山。",
+    "source": "《早发白帝城》",
+    "url": "https://zh.wikisource.org/wiki/早發白帝城"
+  },
+  {
+    "id": "classic-079",
+    "text": "两岸青山相对出，孤帆一片日边来。",
+    "source": "《望天门山》",
+    "url": "https://zh.wikisource.org/wiki/望天門山"
+  },
+  {
+    "id": "classic-080",
+    "text": "朝辞白帝彩云间，千里江陵一日还。",
+    "source": "《早发白帝城》",
+    "url": "https://zh.wikisource.org/wiki/早發白帝城"
+  },
+  {
+    "id": "classic-081",
+    "text": "人闲桂花落，夜静春山空。",
+    "source": "《鸟鸣涧》",
+    "url": "https://zh.wikisource.org/wiki/皇甫嶽雲溪雜題五首/鳥鳴澗"
+  },
+  {
+    "id": "classic-082",
+    "text": "春眠不觉晓，处处闻啼鸟。",
+    "source": "《春晓》",
+    "url": "https://zh.wikisource.org/wiki/春曉_(孟浩然)"
+  },
+  {
+    "id": "classic-083",
+    "text": "迟日江山丽，春风花草香。泥融飞燕子，沙暖睡鸳鸯。",
+    "source": "《绝句·迟日江山丽》",
+    "url": "https://zh.wikisource.org/wiki/絕句（遲日江山麗）"
+  },
+  {
+    "id": "classic-084",
+    "text": "而我乐名山，对之心益闲。",
+    "source": "《望庐山瀑布二首·其一》",
+    "url": "https://zh.wikisource.org/wiki/望廬山瀑布"
+  },
+  {
+    "id": "classic-085",
+    "text": "两个黄鹂鸣翠柳，一行白鹭上青天。",
+    "source": "《绝句·两个黄鹂鸣翠柳》",
+    "url": "https://zh.wikisource.org/wiki/詩林廣記"
+  },
+  {
+    "id": "classic-086",
+    "text": "留连戏蝶时时舞，自在娇莺恰恰啼。",
+    "source": "《江畔独步寻花七绝句·其六》",
+    "url": "https://zh.wikisource.org/wiki/江畔獨步尋花七絶句"
+  },
+  {
+    "id": "classic-087",
+    "text": "桃花一簇开无主，可爱深红映浅红。",
+    "source": "《江畔独步寻花七绝句·其五》",
+    "url": "https://zh.wikisource.org/wiki/江畔獨步尋花七絶句"
+  },
+  {
+    "id": "classic-088",
+    "text": "随风潜入夜，润物细无声。",
+    "source": "《春夜喜雨》",
+    "url": "https://zh.wikisource.org/wiki/春夜喜雨"
+  },
+  {
+    "id": "classic-089",
+    "text": "几处早莺争暖树，谁家新燕啄春泥。",
+    "source": "《钱塘湖春行》",
+    "url": "https://zh.wikisource.org/wiki/錢塘湖春行"
+  },
+  {
+    "id": "classic-090",
+    "text": "绿蚁新醅酒，红泥小火炉。晚来天欲雪，能饮一杯无？",
+    "source": "《问刘十九》",
+    "url": "https://zh.wikisource.org/wiki/問劉十九"
+  },
+  {
+    "id": "classic-091",
+    "text": "人间四月芳菲尽，山寺桃花始盛开。",
+    "source": "《大林寺桃花》",
+    "url": "https://zh.wikisource.org/wiki/大林寺桃花"
+  },
+  {
+    "id": "classic-092",
+    "text": "天街小雨润如酥，草色遥看近却无。",
+    "source": "《早春呈水部张十八员外二首·其一》",
+    "url": "https://zh.wikisource.org/wiki/早春呈水部張十八員外二首"
+  },
+  {
+    "id": "classic-093",
+    "text": "晴空一鹤排云上，便引诗情到碧霄。",
+    "source": "《秋词二首·其一》",
+    "url": "https://zh.wikisource.org/wiki/秋詞二首"
+  },
+  {
+    "id": "classic-094",
+    "text": "遥望洞庭山水翠，白银盘里一青螺。",
+    "source": "《望洞庭》",
+    "url": "https://zh.wikisource.org/wiki/望洞庭"
+  },
+  {
+    "id": "classic-095",
+    "text": "潮平两岸阔，风正一帆悬。海日生残夜，江春入旧年。",
+    "source": "《次北固山下》",
+    "url": "https://zh.wikisource.org/wiki/次北固山下"
+  },
+  {
+    "id": "classic-096",
+    "text": "草树知春不久归，百般红紫斗芳菲。",
+    "source": "《晚春》",
+    "url": "https://zh.wikisource.org/wiki/晚春_(韓愈)"
+  },
+  {
+    "id": "classic-097",
+    "text": "碧玉妆成一树高，万条垂下绿丝绦。不知细叶谁裁出，二月春风似剪刀。",
+    "source": "《咏柳》",
+    "url": "https://zh.wikisource.org/wiki/詠柳_(賀知章)"
+  },
+  {
+    "id": "classic-098",
+    "text": "泉眼无声惜细流，树阴照水爱晴柔。小荷才露尖尖角，早有蜻蜓立上头。",
+    "source": "《小池》",
+    "url": "https://zh.wikisource.org/wiki/小池"
+  },
+  {
+    "id": "classic-099",
+    "text": "接天莲叶无穷碧，映日荷花别样红。",
+    "source": "《晓出净慈寺送林子方》",
+    "url": "https://zh.wikisource.org/wiki/曉出淨慈寺送林子方"
+  },
+  {
+    "id": "classic-100",
+    "text": "儿童急走追黄蝶，飞入菜花无处寻。",
+    "source": "《宿新市徐公店》",
+    "url": "https://zh.wikisource.org/wiki/宿新市徐公店二首"
+  },
+  {
+    "id": "classic-101",
+    "text": "等闲识得东风面，万紫千红总是春。",
+    "source": "《春日》",
+    "url": "https://zh.wikisource.org/wiki/春日_(朱熹)"
+  },
+  {
+    "id": "classic-102",
+    "text": "半亩方塘一鉴开，天光云影共徘徊。问渠那得清如许，为有源头活水来。",
+    "source": "《观书有感·其一》",
+    "url": "https://zh.wikisource.org/wiki/觀書有感"
+  },
+  {
+    "id": "classic-103",
+    "text": "百啭千声随意移，山花红紫树高低。",
+    "source": "《画眉鸟》",
+    "url": "https://zh.wikisource.org/wiki/畫眉鳥"
+  },
+  {
+    "id": "classic-104",
+    "text": "水光潋滟晴方好，山色空蒙雨亦奇。",
+    "source": "《饮湖上初晴后雨·其二》",
+    "url": "https://zh.wikisource.org/wiki/飲湖上初晴後雨"
+  },
+  {
+    "id": "classic-105",
+    "text": "竹外桃花三两枝，春江水暖鸭先知。",
+    "source": "《惠崇春江晚景》",
+    "url": "https://zh.wikisource.org/wiki/惠崇春江晚景"
+  },
+  {
+    "id": "classic-106",
+    "text": "一年好景君须记，最是橙黄橘绿时。",
+    "source": "《赠刘景文》",
+    "url": "https://zh.wikisource.org/wiki/贈劉景文"
+  },
+  {
+    "id": "classic-107",
+    "text": "绿阴不减来时路，添得黄鹂四五声。",
+    "source": "《三衢道中》",
+    "url": "https://zh.wikisource.org/wiki/三衢道中"
+  },
+  {
+    "id": "classic-108",
+    "text": "墙角数枝梅，凌寒独自开。遥知不是雪，为有暗香来。",
+    "source": "《梅花》",
+    "url": "https://zh.wikisource.org/wiki/梅花_(王安石)"
+  },
+  {
+    "id": "classic-109",
+    "text": "云淡风轻近午天，傍花随柳过前川。",
+    "source": "《春日偶成》",
+    "url": "https://zh.wikisource.org/wiki/春日偶成_(程顥)"
+  },
+  {
+    "id": "classic-110",
+    "text": "山下兰芽短浸溪，松间沙路净无泥。",
+    "source": "《浣溪沙·游蕲水清泉寺》",
+    "url": "https://zh.wikisource.org/wiki/浣溪沙（遊蘄水清泉寺，寺臨蘭溪，溪水西流）"
+  },
+  {
+    "id": "classic-111",
+    "text": "且将新火试新茶。诗酒趁年华。",
+    "source": "《望江南·超然台作》",
+    "url": "https://zh.wikisource.org/wiki/望江南（春未老）"
+  },
+  {
+    "id": "classic-112",
+    "text": "对一张琴、一壶酒、一溪云。",
+    "source": "《行香子·述怀》",
+    "url": "https://zh.wikisource.org/wiki/七修類稿/卷34"
+  },
+  {
+    "id": "classic-113",
+    "text": "童孙未解供耕织，也傍桑阴学种瓜。",
+    "source": "《田家》",
+    "url": "https://zh.wikisource.org/wiki/田家_(范成大)"
+  },
+  {
+    "id": "classic-114",
+    "text": "雪沫乳花浮午盏，蓼茸蒿笋试春盘。人间有味是清欢。",
+    "source": "《浣溪沙·细雨斜风作晓寒》",
+    "url": "https://zh.wikisource.org/wiki/浣溪沙（元豐七年十月二十四日，從泗州劉倩叔遊南山）"
+  },
+  {
+    "id": "classic-115",
+    "text": "兴尽晚回舟，误入藕花深处。争渡，争渡，惊起一滩鸥鹭。",
+    "source": "《如梦令·常记溪亭日暮》",
+    "url": "https://zh.wikisource.org/wiki/如夢令_(李清照)/如夢令_(常記溪亭日暮)"
+  },
+  {
+    "id": "classic-116",
+    "text": "西塞山前白鹭飞，桃花流水鳜鱼肥。青箬笠，绿蓑衣，斜风细雨不须归。",
+    "source": "《渔歌子·西塞山前白鹭飞》",
+    "url": "https://zh.wikisource.org/wiki/岩下放言"
+  },
+  {
+    "id": "classic-117",
+    "text": "竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。",
+    "source": "《定风波·莫听穿林打叶声》",
+    "url": "https://zh.wikisource.org/wiki/定風波_(莫聽穿林打葉聲)"
+  },
+  {
+    "id": "classic-118",
+    "text": "稻花香里说丰年，听取蛙声一片。",
+    "source": "《西江月·夜行黄沙道中》",
+    "url": "https://zh.wikisource.org/wiki/Page:Gujin_Tushu_Jicheng,_Volume_024_(1700-1725).djvu/84"
+  },
+  {
+    "id": "classic-119",
+    "text": "谁道人生无再少，门前流水尚能西。",
+    "source": "《浣溪沙·游蕲水清泉寺》",
+    "url": "https://zh.wikisource.org/wiki/浣溪沙（遊蘄水清泉寺，寺臨蘭溪，溪水西流）"
+  },
+  {
+    "id": "classic-120",
+    "text": "日出江花红胜火，春来江水绿如蓝。",
+    "source": "《忆江南·江南好》",
+    "url": "https://zh.wikisource.org/wiki/憶江南_(白居易)"
   }
 ]

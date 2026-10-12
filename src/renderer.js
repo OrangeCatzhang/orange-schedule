@@ -112,13 +112,19 @@ function renderPanel(){
 }
 function setView(v){view=v;if(v==='today')selected=today();render();}
 function syncRepeatOptions(){
- const f=$('#task-form'),daily=!editing&&f.elements.repeat.value==='daily',until=f.elements.repeatUntil,start=f.elements.date.value;
- $('#repeat-until-field').hidden=!daily;until.disabled=!daily;until.required=daily;until.min=start;
- if(daily&&start&&repeatEndAuto)until.value=key(add(parse(start),29));
+ const f=$('#task-form'),frequency=f.elements.repeat.value,weekdays=frequency==='weekdays',ranged=!editing&&['daily','weekdays'].includes(frequency),until=f.elements.repeatUntil,start=f.elements.date.value;
+ $('#repeat-until-field').hidden=!ranged;until.disabled=!ranged;until.required=ranged;until.min=start;
+ if(ranged&&start&&repeatEndAuto)until.value=key(add(parse(start),29));
  if(editing)$('#form-hint').textContent='修改仅影响当前这项计划。';
- else if(daily){
-  const count=start&&until.value?Math.round((parse(until.value)-parse(start))/86400000)+1:0;
-  $('#form-hint').textContent=count>0?'将创建 '+count+' 项每日计划，包含结束当天。每天可分别修改、完成或删除。':'请选择不早于开始日期的结束日期。';
+ else if(ranged){
+  const days=start&&until.value?(Date.parse(until.value+'T00:00:00Z')-Date.parse(start+'T00:00:00Z'))/86400000+1:0;
+  let count=days;
+  if(weekdays&&days>0){
+   count=Math.floor(days/7)*5;const firstDay=parse(start).getDay();
+   for(let i=0;i<days%7;i++)if((firstDay+i)%7!==0&&(firstDay+i)%7!==6)count++;
+  }
+  const rule=weekdays?'仅周一至周五，跳过周末；不自动识别法定节假日及调休。':'包含结束当天。每天可分别修改、完成或删除。';
+  $('#form-hint').textContent=days<=0?'请选择不早于开始日期的结束日期。':count===0?'所选日期范围内没有工作日，请调整日期。':count>10000?'最多生成 10000 项，请缩短日期范围。':'将创建 '+count+' 项'+(weekdays?'工作日':'每日')+'计划。'+rule;
  }else $('#form-hint').textContent='重复计划会生成独立事项，可分别修改和完成。';
 }
 $('#task-form [name=repeat]').onchange=syncRepeatOptions;
@@ -171,7 +177,7 @@ $('#clear-search').onclick=()=>{query='';$('#search').value='';render();};
 $('#task-form').onsubmit=async e=>{
  e.preventDefault();if(busy)return;busy=true;const submit=e.target.querySelector('[type=submit]');submit.disabled=true;
  const data=Object.fromEntries(new FormData(e.target));data.priority=e.target.elements.priority.checked?'high':'normal';data.done=editing?.done||false;
- try{state=await api.saveTask(data,editing?1:data.repeat==='daily'?{frequency:'daily',until:data.repeatUntil}:Number(data.repeat));$('#editor').close();selected=data.date;mini=parse(selected);if(!inRange(data))anchor=monday(mini);if(view==='inbox'||view==='done')view='calendar';render();toast(editing?'计划已更新':'计划已保存');}
+ try{state=await api.saveTask(data,editing?1:['daily','weekdays'].includes(data.repeat)?{frequency:data.repeat,until:data.repeatUntil}:Number(data.repeat));$('#editor').close();selected=data.date;if(!editing&&data.repeat==='weekdays'){while([0,6].includes(parse(selected).getDay()))selected=key(add(parse(selected),1));}mini=parse(selected);if(!inRange({date:selected}))anchor=monday(mini);if(view==='inbox'||view==='done')view='calendar';render();toast(editing?'计划已更新':'计划已保存');}
  catch(e){$('#form-error').textContent=e.message.replace(/^Error invoking remote method '[^']+': Error: /,'');}
  finally{busy=false;submit.disabled=false;}
 };

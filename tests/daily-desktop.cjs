@@ -150,7 +150,7 @@ async function cleanTestData() {
     });
     assert.deepEqual(await page.locator('#task-form [name=repeat] option')
       .evaluateAll(options => options.map(option => option.value).sort()),
-    ['1', '12', '4', '8', 'daily']);
+    ['1', '12', '4', '8', 'daily', 'weekdays']);
     await page.locator('#task-form [name=repeat]').selectOption('daily');
     await expectRepeatEndState(page, true);
     assert.equal(await page.locator('#task-form [name=repeatUntil]').inputValue(),

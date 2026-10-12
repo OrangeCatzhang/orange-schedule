@@ -24,22 +24,34 @@ function dueTasks(tasks,now=Date.now()) {
   return tasks.filter(t=>!t.done && t.reminder>=0 && (t.snoozeUntil ? t.snoozeUntil<=now : !t.notifiedAt && at(t)-t.reminder*60000<=now)).sort((a,b)=>at(a)-at(b));
 }
 function makeSeries(task, repeat=1) {
-  let count=repeat,step=7;
+  let count=repeat,step=7,weekdays=false;
+  const start=Date.parse(task.date+'T00:00:00Z');
   if(repeat&&typeof repeat==='object'){
-    if(Array.isArray(repeat)||repeat.frequency!=='daily')throw new Error('重复设置不正确');
+    if(Array.isArray(repeat)||!['daily','weekdays'].includes(repeat.frequency))throw new Error('重复设置不正确');
     const until=repeat.until;
     if(typeof until!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(until)||dateKey(new Date(until+'T12:00:00'))!==until)throw new Error('请选择有效的重复结束日期');
     if(until<task.date)throw new Error('重复结束日期不能早于开始日期');
-    count=(Date.parse(until+'T00:00:00Z')-Date.parse(task.date+'T00:00:00Z'))/86400000+1;
-    if(!Number.isInteger(count)||count<1||count>10000)throw new Error('每日重复最多生成 10000 项，请缩短日期范围');
+    const days=(Date.parse(until+'T00:00:00Z')-start)/86400000+1;
+    weekdays=repeat.frequency==='weekdays';
+    count=days;
+    if(weekdays){
+      count=Math.floor(days/7)*5;
+      const firstDay=new Date(start).getUTCDay();
+      for(let i=0;i<days%7;i++)if((firstDay+i)%7!==0&&(firstDay+i)%7!==6)count++;
+      if(count===0)throw new Error('所选日期范围内没有工作日，请调整日期');
+    }
+    if(!Number.isInteger(count)||count<1||count>10000)throw new Error((weekdays?'工作日':'每日')+'重复最多生成 10000 项，请缩短日期范围');
     step=1;
   }else if(![1,4,8,12].includes(count))throw new Error('重复次数不正确');
-  return Array.from({length:count},(_,i)=>{
-    const d=new Date(task.date+'T12:00:00');d.setDate(d.getDate()+step*i);
-    const date=dateKey(d);
+  const result=[];
+  for(let offset=0;result.length<count;offset+=step){
+    const d=new Date(start+offset*86400000);
+    if(weekdays&&(d.getUTCDay()===0||d.getUTCDay()===6))continue;
+    const date=d.toISOString().slice(0,10);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('重复日期超出支持范围');
-    return {...task,id:i?crypto.randomUUID():task.id,date};
-  });
+    result.push({...task,id:result.length?crypto.randomUUID():task.id,date});
+  }
+  return result;
 }
 function validateState(raw) {
   if (raw?.version!==1||!Array.isArray(raw.tasks)||raw.tasks.length>10000) throw new Error('不是有效的橙子日程备份（最多 10000 项）');
