@@ -100,7 +100,7 @@ app.whenReady().then(()=>{
  if(process.argv.includes('--widget'))widgetController.open();else widgetController.restore();
  handle('quit',()=>{quitting=true;app.quit();});
  const automaticUpdateCheck=()=>{if(state.settings.checkUpdates)updateController.check({manual:false});};
- setTimeout(automaticUpdateCheck,7000).unref();setInterval(automaticUpdateCheck,6*60*60*1000).unref();
+ setTimeout(()=>{automaticUpdateCheck();setInterval(automaticUpdateCheck,6*60*60*1000).unref();},7000).unref();
  setTimeout(tick,3000);setInterval(tick,5000);powerMonitor.on('resume',()=>setTimeout(tick,1500));
 });
 app.on('before-quit',()=>{quitting=true;try{widgetController?.shutdown();}catch(e){console.error('Widget bounds not saved:',e.message);}});

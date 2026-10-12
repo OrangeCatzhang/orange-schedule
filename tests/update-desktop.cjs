@@ -29,7 +29,7 @@ const mockState = instance => instance.evaluate(() => {
   const test = globalThis.__weeklightUpdateTest;
   return {
     mode: test.mode, currentVersion: test.currentVersion, nextVersion: test.nextVersion,
-    calls: test.calls, opens: test.opens, unexpected: test.unexpected
+    calls: test.calls, opens: test.opens, unexpected: test.unexpected, updateIntervals: test.updateIntervals
   };
 });
 
@@ -42,9 +42,14 @@ async function installMocks(instance, mode) {
     const nextVersion = parts[0] + '.' + parts[1] + '.' + (parts[2] + 1);
     const test = {
       mode: config.mode, currentVersion, nextVersion, notes: config.notes,
-      calls: [], opens: [], unexpected: []
+      calls: [], opens: [], unexpected: [], updateIntervals: []
     };
     globalThis.__weeklightUpdateTest = test;
+    const originalSetInterval = globalThis.setInterval;
+    globalThis.setInterval = (callback, delay, ...args) => {
+      if (delay === 6 * 60 * 60 * 1000) test.updateIntervals.push({ delay, registeredAtUptimeMs: process.uptime() * 1000 });
+      return originalSetInterval(callback, delay, ...args);
+    };
     net.fetch = async (url, options = {}) => {
       test.calls.push({ url: String(url), method: options.method, mode: test.mode });
       if (String(url) !== config.apiUrl) {
@@ -282,6 +287,9 @@ async function cleanup() {
     assert.equal(native.calls[0].mode, 'current');
     assert.equal(native.opens.length, 0);
     checks.push('the enabled checkbox survives restart and the startup timer checks the mocked release once');
+    assert.equal(native.updateIntervals.length, 1, 'Register the recurring timer after the initial check rather than before it');
+    assert(native.updateIntervals[0].registeredAtUptimeMs >= 7000);
+    checks.push('the six-hour interval starts after the initial check so its first tick is not suppressed by the cooldown');
 
     await setAutomaticUpdates(main, false);
     sessions.push(await mockState(instance));
