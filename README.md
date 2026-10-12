@@ -12,13 +12,13 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ## 下载与安装
 
-**[下载 Windows 安装包（1.1.10，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.10/OrangeSchedule-Setup-1.1.10.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
+**[下载 Windows 安装包（1.1.11，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.11/OrangeSchedule-Setup-1.1.11.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 源码托管在 GitHub，安装 EXE 通过 GitHub Releases 公开分发，不进入源码仓库。
 
 下载安装包后直接运行，按提示选择安装位置。终端用户无需安装 Node.js 或编译工具。安装版可创建桌面与开始菜单快捷方式，并可在设置中启用开机启动。
 
-当前版本 **1.1.10**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
+当前版本 **1.1.11**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
 
 ## 功能
 
@@ -72,9 +72,11 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 启用「设置与备份 → 自动检查更新」后，应用在启动后检查一次，持续运行时每 6 小时检查一次。发现新稳定版会在日历顶部提示；也可点击「检查更新」手动检查，或选择「稍后」暂时隐藏提示。
 
-应用会显示更新说明。点击「下载安装包」将在浏览器打开该仓库对应版本的 Windows EXE；下载后从托盘退出旧版，再安装到原位置。此功能负责提示和下载入口，不会静默安装。断网或 GitHub 限流会在设置中显示原因，计划与提醒继续工作。
+应用会显示更新说明。点击「下载安装包」将在浏览器打开该仓库对应版本的 Windows EXE；下载后从托盘退出旧版，再安装到原位置。此功能负责提示和下载入口，不会静默安装。
 
-**1.1.8 及更早版本没有升级检查功能，需要先手动安装 1.1.9，之后才能收到应用内的新版本提示。**
+从 1.1.11 起，检查优先读取仓库的公开版本文件，读取失败时才尝试一次 GitHub Releases API，减少对匿名 API 共享配额的依赖。公开文件仍可能受网络或访问限制影响；如果两个来源都失败，设置页会显示原因，并始终保留「打开官方下载页」入口。计划与提醒继续工作，检查失败不会改动本地计划。
+
+**1.1.8 及更早版本没有升级检查功能，需要手动安装当前版本。1.1.9 / 1.1.10 若提示 GitHub 检查次数受限，也请从本页下载并手动升级至 1.1.11 一次，新版才会使用公开版本文件。**
 
 ### 名言警句与诗词提醒
 
@@ -110,9 +112,15 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 请升级到 1.1.4 或更高版本。1.1.3 在状态通知延迟时可能显示旧的勾选状态；新版使用保存返回的最新状态，并核验 Windows 是否接受修改。若系统没有保存，会在设置页显示具体错误，可按提示检查权限或安全软件拦截情况。
 
+### 检查更新提示 GitHub 次数已达限制
+
+GitHub 提供匿名访问，但其 REST API 通常按公网 IP 共享每小时 60 次配额。同一个网络出口的其他程序也可能消耗配额，因此只点一次检查也可能遇到限流，详情见 [GitHub 官方说明](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)。
+
+请升级至 1.1.11 或更高版本。新版优先读取公开版本文件，正常检查不调用 Releases API，无需登录或提供密钥；无法联网检查时，可以在设置中打开官方下载页。公开文件也受网络和服务访问限制影响，并非无限制服务。
+
 ### 下载的 EXE 是安装包还是单文件程序
 
-下载的 `OrangeSchedule-Setup-1.1.10.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
+下载的 `OrangeSchedule-Setup-1.1.11.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
 
 ## 数据与隐私
 
@@ -122,7 +130,7 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 可通过 `WEEKLIGHT_DATA_DIR` 环境变量指定其他目录。应用不会主动查找或迁移其他路径中的数据。早期测试版本用户可先从旧版导出 JSON，再在新版中导入。
 
-应用没有账户服务、云同步或遥测。自动或手动检查更新只请求 GitHub 的公开发行信息，不上传计划、备注或备份；自动检查可在设置中关闭。源码和公开安装包不包含个人计划、备份、浏览器缓存或本机验证报告。
+应用没有账户服务、云同步或遥测。自动或手动检查更新只请求仓库的公开版本文件或 GitHub 的公开发行信息，不上传计划、备注或备份；自动检查可在设置中关闭。源码和公开安装包不包含个人计划、备份、浏览器缓存或本机验证报告。
 
 ## 从源码运行
 
@@ -154,7 +162,7 @@ npm run test:series
 npm run test:updates
 ```
 
-桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.10/`：`OrangeSchedule-Setup-1.1.10.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
+桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.11/`：`OrangeSchedule-Setup-1.1.11.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
 
 `npm run test:ui` 提供额外的主日历回归验证。可选的 `scripts/prepare-runtime.cjs` 用于离线准备 Electron，需要 Python 和匹配校验值的官方 Electron ZIP；正常 `npm ci` 不需要运行它。
 
@@ -168,6 +176,8 @@ npm run test:updates
 - `src/renderer.js`、`src/style.css`：主日历界面。
 - `src/widget-*`：桌面便签模型、窗口与界面。
 - `src/native/WindowLayer.cs`：仅调整应用窗口层级的 Windows 原生助手。
+- `docs/updates/latest.json`：已验证公开发行版的更新清单。
+- `scripts/write-update-manifest.cjs`：生成版本清单；[发布步骤](docs/releasing.md)要求先核验公开安装包再更新清单。
 - `tests/`：数据边界、交互、原生层级与打包验证。
 
 ## 开源与反馈
