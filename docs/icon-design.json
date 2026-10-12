@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "app": "橙子日程",
+  "design": "橙子日历",
+  "date": "2026-10-12",
+  "generator": "Built-in image_gen",
+  "transparentBackground": true,
+  "concept": "橙色日历主体、绿色橙叶与白色勾选；简洁柔和，适配 Windows 桌面与系统托盘。",
+  "prompt": "Use case: logo-brand.\nAsset type: final production Windows desktop application icon, one single square icon for the Chinese personal calendar and to-do app \"橙子日程\" (Orange Schedule). No lettering.\nPrimary request: Design an original, beautifully simple app icon that unmistakably combines a ripe orange fruit and a calendar / completed to-do.\nSubject and silhouette: a plump softly rounded orange calendar-page shape, almost a rounded square with gently bulbous lower corners. One small confident deep-green citrus leaf emerges from its upper-right shoulder. The orange shape itself is the calendar: two short broad ivory calendar binding tabs along its top edge, a single subtle horizontal ivory header separator, and a large centered ivory checkmark with rounded endpoints in the lower portion. Unify these parts into one elegant coherent symbol, not an orange next to a calendar and not a collage.\nStyle: premium restrained macOS-inspired app-icon craft, front-on and symmetric in overall weight, very subtle soft dimensional shading on warm tangerine-orange surfaces, crisp clean edges, smooth solid materials, friendly and calm rather than toy-like. The checkmark and calendar details should read nearly flat and remain high contrast.\nPalette: warm natural orange approximately #F68B27 with restrained deeper orange shading, ivory #FFF9EF, dark leaf-green approximately #397C51. No additional colors.\nComposition: one centered mark with its leaf and tabs fully contained, occupying approximately 86–90 percent of the square canvas, equal optical margins. Broad simple forms, thick clean glyphs, recognizable at 16, 20, 32 and 48 pixels. Actual transparent alpha outside the icon, including outer corners; no surrounding background tile.\nAvoid: text, letters, numerals, dates, wordmarks, multiple icon options, mockup devices, display stands, poster layouts, borders around the canvas, extra fruit, fruit texture or pores, citrus cross-sections, tiny calendar grids, clocks, faces, sparkles, gradients in the backdrop, drop shadows outside the silhouette, watermarks. Deliver only this one icon on genuinely transparent background.",
+  "sourceAsset": "docs/images/icon-master.png",
+  "runtimeAsset": "src/assets/icon.png",
+  "windowsAsset": "src/assets/icon.ico"
+}

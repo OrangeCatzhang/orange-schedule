@@ -1,3 +1,5 @@
+<img src="src/assets/icon.png" width="96" height="96" alt="橙子日程图标：橙子日历与完成勾选">
+
 # 橙子日程：Windows 开源日程管理、桌面日历与待办清单
 
 橙子日程是一个 **免费开源的 Windows（Win）日程管理项目**，提供适用于 **Windows 10 / 11 x64** 的 EXE 安装包。通过桌面日历、待办清单和日 / 周桌面便签安排学习与工作，用四周规划和周时间表管理未来几周，再通过定时提醒跟进每一项计划。
@@ -10,13 +12,13 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ## 下载与安装
 
-**[下载 Windows 安装包（1.1.9，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.9/OrangeSchedule-Setup-1.1.9.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
+**[下载 Windows 安装包（1.1.10，x64）](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.10/OrangeSchedule-Setup-1.1.10.exe)** · [全部版本与校验文件](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 源码托管在 GitHub，安装 EXE 通过 GitHub Releases 公开分发，不进入源码仓库。
 
 下载安装包后直接运行，按提示选择安装位置。终端用户无需安装 Node.js 或编译工具。安装版可创建桌面与开始菜单快捷方式，并可在设置中启用开机启动。
 
-当前版本 **1.1.9**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
+当前版本 **1.1.10**。安装包尚未使用商业代码签名证书；Windows 可能显示未知发布者。请核对下载来源和发布页提供的 SHA-256。
 
 ## 功能
 
@@ -110,7 +112,7 @@ Orange Schedule（橙子日程）is a free, open-source Windows calendar planner
 
 ### 下载的 EXE 是安装包还是单文件程序
 
-下载的 `OrangeSchedule-Setup-1.1.9.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
+下载的 `OrangeSchedule-Setup-1.1.10.exe` 是安装程序。安装后通过桌面或开始菜单启动橙子日程，无需额外安装 Node.js。它不是可独立拷走运行的单文件应用；从源码构建的免安装目录需完整保留 `win-unpacked` 文件夹。
 
 ## 数据与隐私
 
@@ -152,7 +154,7 @@ npm run test:series
 npm run test:updates
 ```
 
-桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.9/`：`OrangeSchedule-Setup-1.1.9.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
+桌面测试需要可交互的 Windows 桌面，并使用独立测试数据。构建结果在 `outputs/weeklight-1.1.10/`：`OrangeSchedule-Setup-1.1.10.exe` 为安装包，`win-unpacked/橙子日程.exe` 可直接运行（需保留整个 `win-unpacked` 文件夹）。
 
 `npm run test:ui` 提供额外的主日历回归验证。可选的 `scripts/prepare-runtime.cjs` 用于离线准备 Electron，需要 Python 和匹配校验值的官方 Electron ZIP；正常 `npm ci` 不需要运行它。
 
