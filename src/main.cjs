@@ -5,7 +5,8 @@ const {validateSeriesTasks,previewTaskAction,applyTaskAction}=require('./task-se
 const {createWidgetController}=require('./widget-controller.cjs');
 const {normalizePrefs}=require('./widget-model.cjs');
 const {messages,normalizeRotation,getCurrentMessage,advanceMessage}=require('./reminder-copy.cjs');
-const APP_ID='local.weeklight.planner';
+const {APP_ID,resolveAppId,createWindowBranding}=require('./window-branding.cjs');
+const windowBranding=createWindowBranding({app});
 const {createLoginSettings}=require('./login-settings.cjs');
 const loginSettings=createLoginSettings({app,loginItemName:APP_ID});
 const {resolveDataPath}=require('./data-path.cjs');
@@ -13,7 +14,7 @@ const {createUpdateController}=require('./update-controller.cjs');
 const {REPOSITORY_URL}=require('./update-checker.cjs');
 const dataDir=resolveDataPath(app.getPath('userData'),process.env.WEEKLIGHT_DATA_DIR);
 fs.mkdirSync(dataDir,{recursive:true});app.setPath('userData',dataDir);
-app.setAppUserModelId(APP_ID);
+app.setAppUserModelId(resolveAppId(app));
 const dataFile=path.join(dataDir,'plans.json');
 let state={version:1,tasks:[],settings:{sound:true,popup:true,checkUpdates:true,widget:normalizePrefs(),reminderRotation:normalizeRotation()},history:[]};
 let startupError='';let win,tray,popup,widgetController,quitting=false;const notifications=new Set();
@@ -29,18 +30,22 @@ function nextReminderMessage(next){next.settings.reminderRotation=advanceMessage
 function notificationEncouragement(){const m=getCurrentMessage(state.settings.reminderRotation);return m.text+(m.url?' — '+m.source:'');}
 function showMain(){if(win?.isMinimized())win.restore();win?.show();win?.focus();}
 function createWindow(){
-  win=new BrowserWindow({width:1450,height:950,minWidth:1050,minHeight:720,title:'橙子日程 · 计划你的每一周',backgroundColor:'#f7f8fa',icon:path.join(__dirname,'assets/icon.png'),autoHideMenuBar:true,show:!process.argv.includes('--hidden')&&!process.argv.includes('--widget'),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  win=new BrowserWindow({width:1450,height:950,minWidth:1050,minHeight:720,title:'橙子日程 · 计划你的每一周',backgroundColor:'#f7f8fa',icon:windowBranding.iconPath,autoHideMenuBar:true,show:false,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  windowBranding.apply(win);
   win.loadFile(path.join(__dirname,'index.html'));
   win.on('close',e=>{if(!quitting){e.preventDefault();win.hide();}});
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   win.webContents.on('will-navigate',e=>e.preventDefault());
+  if(!process.argv.includes('--hidden')&&!process.argv.includes('--widget'))win.show();
 }
 function showReminder(){
   if(!state.settings.popup)return;
   if(popup&&!popup.isDestroyed()){popup.showInactive();return;}
-  popup=new BrowserWindow({width:460,height:550,minWidth:400,minHeight:440,resizable:true,alwaysOnTop:true,title:'橙子日程 · 提醒',autoHideMenuBar:true,icon:path.join(__dirname,'assets/icon.png'),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  popup=new BrowserWindow({width:460,height:550,minWidth:400,minHeight:440,resizable:true,alwaysOnTop:true,title:'橙子日程 · 提醒',autoHideMenuBar:true,show:false,icon:windowBranding.iconPath,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  windowBranding.apply(popup);
   popup.loadFile(path.join(__dirname,'reminder.html'));popup.on('closed',()=>{popup=null;});
   popup.webContents.setWindowOpenHandler(()=>({action:'deny'}));popup.webContents.on('will-navigate',e=>e.preventDefault());
+  popup.show();
 }
 function notify(title,body){if(Notification.isSupported()){const n=new Notification({title,body,silent:!state.settings.sound,icon:path.join(__dirname,'assets/icon.png')});notifications.add(n);n.on('click',showMain);n.on('close',()=>notifications.delete(n));n.on('failed',()=>notifications.delete(n));n.show();setTimeout(()=>notifications.delete(n),60000).unref();}}
 function tick(){
