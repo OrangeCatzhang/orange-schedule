@@ -196,8 +196,8 @@ async function cleanTestData() {
 
     const beforeComplete = state.tasks;
     await page.locator('#calendar [data-toggle="' + series[0].id + '"]').click();
-    await page.waitForFunction(id => window.weeklight.get()
-      .then(current => current.tasks.find(task => task.id === id)?.done), series[0].id);
+    await page.locator('#task-action-confirm').click();
+    await page.waitForFunction(id => document.querySelector('#calendar [data-toggle="'+id+'"]').classList.contains('checked'), series[0].id);
     state = await readState(page);
     assert.equal(state.tasks.length, 4);
     assert.equal(state.tasks.filter(task => task.done).length, 1);
@@ -226,7 +226,7 @@ async function cleanTestData() {
     await page.locator('#calendar [data-task="' + series[2].id + '"]').click();
     await page.waitForFunction(() => document.querySelector('#editor').open);
     await page.locator('#delete-task').click();
-    await page.locator('#confirm-yes').click();
+    await page.locator('#task-action-confirm').click();
     await page.waitForFunction(() => !document.querySelector('#editor').open);
     state = await readState(page);
     assert.equal(state.tasks.length, 3);

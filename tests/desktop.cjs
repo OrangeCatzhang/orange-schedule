@@ -45,7 +45,7 @@ try{
  await app.close();app=null;
  app=await electron.launch({args:[root],env});const page2=await app.firstWindow();await page2.waitForSelector('.month-grid');s=await page2.evaluate(()=>window.weeklight.get());assert.equal(s.tasks.length,before);assert(s.tasks.find(t=>t.id===reminderTask.id).snoozeUntil);
  // Delete via confirmation.
- await page2.locator('.event').first().click();await page2.locator('#delete-task').click();await page2.locator('#confirm-yes').click();await page2.waitForFunction(()=>!document.querySelector('#editor').open);s=await page2.evaluate(()=>window.weeklight.get());assert.equal(s.tasks.length,before-1);
+ await page2.locator('.event').first().click();await page2.locator('#delete-task').click();await page2.locator('#task-action-confirm').click();await page2.waitForFunction(()=>!document.querySelector('#editor').open);s=await page2.evaluate(()=>window.weeklight.get());assert.equal(s.tasks.length,before-1);
  await page2.setViewportSize({width:1050,height:720});await page2.screenshot({path:path.join(output,'weeklight-compact.png'),fullPage:true});
  assert.deepEqual(errors,[]);const result={passed:true,checks:['28 day calendar','form save and weekly repeat across year','sample data','edit','drag reschedule','168 hourly cells','complete task','search','real background scheduler','snooze persistence','close to tray','restart recovery','delete confirmation','1050 px layout','export backup','merge import','invalid import rollback','independent reminder window'],tasksPersisted:s.tasks.length};await fs.writeFile(path.join(output,'desktop-tests.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
 }finally{if(app)await app.close();await fs.rm(dataDir,{recursive:true,force:true});}

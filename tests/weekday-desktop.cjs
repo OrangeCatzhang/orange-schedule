@@ -178,6 +178,7 @@ async function cleanup() {
 
     const beforeComplete = state.tasks;
     await page.locator('#calendar [data-toggle="' + first[0].id + '"]').click();
+    await page.locator('#task-action-confirm').click();
     await page.waitForFunction(id => document.querySelector('#calendar [data-toggle="' + id + '"]').classList.contains('checked'), first[0].id);
     state = await readState(page);
     assert.equal(state.tasks.filter(task => task.done).length, 1);

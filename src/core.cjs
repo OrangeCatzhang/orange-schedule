@@ -1,6 +1,7 @@
 const {normalizePrefs}=require('./widget-model.cjs');
 const crypto = require('node:crypto');
 const {normalizeRotation}=require('./reminder-copy.cjs');
+const {validateSeriesTasks}=require('./task-series.cjs');
 const CATEGORIES = ['work','study','life'];
 function dateKey(d) { return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-'); }
 function at(task) { return new Date(task.date+'T'+task.time+':00').getTime(); }
@@ -14,10 +15,11 @@ function cleanTask(input, existing) {
   if (!Number.isInteger(duration)||duration<15||duration>1440) throw new Error('时长须为 15–1440 分钟');
   if (![ -1,0,5,10,15,30,60,1440 ].includes(reminder)) throw new Error('提醒时间不正确');
   if (!CATEGORIES.includes(input.category)) throw new Error('请选择有效分类');
-  const task={id:existing?.id||crypto.randomUUID(),title,date:input.date,time:input.time,duration,reminder,category:input.category,priority:input.priority==='high'?'high':'normal',notes:String(input.notes||'').slice(0,5000),done:!!input.done,createdAt:existing?.createdAt||Date.now(),updatedAt:Date.now()};
+  const task={id:existing?.id||crypto.randomUUID(),title,date:input.date,time:input.time,duration,reminder,category:input.category,priority:input.priority==='high'?'high':'normal',notes:String(input.notes||'').slice(0,5000),done:!!input.done,createdAt:existing?(Number.isFinite(existing.createdAt)&&existing.createdAt>0?existing.createdAt:0):Date.now(),updatedAt:Date.now()};
   if (existing && existing.date===task.date && existing.time===task.time && existing.reminder===task.reminder) {
     task.notifiedAt=existing.notifiedAt||null; task.snoozeUntil=existing.snoozeUntil||null;
   }
+  if(existing&&(existing.seriesId!==undefined||existing.seriesIndex!==undefined)){task.seriesId=existing.seriesId;task.seriesIndex=existing.seriesIndex;validateSeriesTasks([task]);}
   return task;
 }
 function dueTasks(tasks,now=Date.now()) {
@@ -43,13 +45,14 @@ function makeSeries(task, repeat=1) {
     if(!Number.isInteger(count)||count<1||count>10000)throw new Error((weekdays?'工作日':'每日')+'重复最多生成 10000 项，请缩短日期范围');
     step=1;
   }else if(![1,4,8,12].includes(count))throw new Error('重复次数不正确');
+  const seriesId=repeat===1?null:crypto.randomUUID();
   const result=[];
   for(let offset=0;result.length<count;offset+=step){
     const d=new Date(start+offset*86400000);
     if(weekdays&&(d.getUTCDay()===0||d.getUTCDay()===6))continue;
     const date=d.toISOString().slice(0,10);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('重复日期超出支持范围');
-    result.push({...task,id:result.length?crypto.randomUUID():task.id,date});
+    result.push({...task,id:result.length?crypto.randomUUID():task.id,date,...(seriesId?{seriesId,seriesIndex:result.length}:{})});
   }
   return result;
 }
@@ -63,6 +66,7 @@ function validateState(raw) {
     for(const key of ['notifiedAt','snoozeUntil']) if(t[key]!=null&&(!Number.isFinite(t[key])||t[key]<0)) throw new Error('备份中的提醒状态无效');
     return c;
   });
-  return {version:1,tasks,settings:{sound:raw.settings?.sound!==false,popup:raw.settings?.popup!==false,widget:normalizePrefs(raw.settings?.widget),reminderRotation:normalizeRotation(raw.settings?.reminderRotation)},history:Array.isArray(raw.history)?raw.history.filter(e=>e&&typeof e.id==='string'&&typeof e.taskId==='string'&&Number.isFinite(e.at)).slice(-300):[]};
+  validateSeriesTasks(tasks);
+  return {version:1,tasks,settings:{sound:raw.settings?.sound!==false,popup:raw.settings?.popup!==false,checkUpdates:raw.settings?.checkUpdates!==false,widget:normalizePrefs(raw.settings?.widget),reminderRotation:normalizeRotation(raw.settings?.reminderRotation)},history:Array.isArray(raw.history)?raw.history.filter(e=>e&&typeof e.id==='string'&&typeof e.taskId==='string'&&Number.isFinite(e.at)).slice(-300):[]};
 }
 module.exports={dateKey,at,cleanTask,dueTasks,makeSeries,validateState};

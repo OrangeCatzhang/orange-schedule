@@ -1,0 +1,60 @@
+dialog.task-action-dialog {
+  margin:auto;
+  padding:0;
+  width:min(440px,calc(100vw - 24px));
+  max-width:calc(100vw - 24px);
+  max-height:calc(100vh - 24px);
+  overflow:hidden;
+  border:1px solid #e0e4e2;
+  border-radius:16px;
+  background:#fcfdfc;
+  color:#303a35;
+  box-shadow:0 20px 70px #17251c30;
+  font:14px/1.6 "Segoe UI Variable","Segoe UI","Microsoft YaHei",sans-serif;
+  -webkit-app-region:no-drag;
+}
+.task-action-dialog::backdrop { background:#222d283d;backdrop-filter:blur(3px) }
+.task-action-dialog[open],.task-action-form { display:flex;flex-direction:column;min-height:0 }
+.task-action-form { width:100%;overflow:hidden;max-height:calc(100vh - 26px);margin:0 }
+.task-action-body { padding:22px 22px 14px;overflow-y:auto;scrollbar-width:thin;min-height:0 }
+.task-action-dialog h2 { margin:0 0 16px;font-size:20px;font-weight:650;line-height:1.4;letter-spacing:0 }
+.task-action-task { padding:12px 14px;border:1px solid #e7ebe8;border-radius:10px;background:#f4f6f4 }
+.task-action-task strong { display:block;font-size:14px;font-weight:600;overflow-wrap:anywhere }
+.task-action-task>span { display:block;color:#707a73;font-size:12px;margin-top:4px }
+.task-action-dialog p { margin:12px 0;font-size:13px;line-height:1.7;overflow-wrap:anywhere }
+#task-action-description { color:#68736b }
+.task-action-dialog .task-action-warning { padding:11px 12px;background:#fbf5e9;color:#79602d;border:1px solid #eee1c5;border-radius:9px }
+#task-action-scope { padding:0;margin:17px 0 13px;border:0;min-width:0 }
+#task-action-scope legend { padding:0;margin-bottom:7px;color:#637168;font-size:12px }
+.task-action-option { display:flex;align-items:center;gap:9px;padding:10px 11px;margin:6px 0;border:1px solid #e1e7e2;border-radius:10px;cursor:pointer;background:white }
+.task-action-option:has(input:checked) { border-color:#72a58a;background:#eff6f1 }
+.task-action-dialog input[type=radio] { accent-color:#38795a;width:16px;height:16px;min-width:16px;margin:0;padding:0;cursor:pointer }
+.task-action-option>span { font-size:14px;flex:1 }
+.task-action-option>small { flex-shrink:0;color:#6c786f;font-size:12px }
+#task-action-preview { margin:11px 0 }
+#task-action-preview summary { color:#496853;cursor:pointer;font-size:13px;line-height:1.6;padding:5px 0;user-select:none }
+#task-action-items { padding:0;margin:7px 0 0;list-style:none;max-height:190px;overflow-y:auto;scrollbar-width:thin;border:1px solid #e7ebe7;border-radius:9px;background:white }
+#task-action-items li { padding:9px 11px;border-bottom:1px solid #edf0ed }
+#task-action-items li:last-child { border-bottom:0 }
+#task-action-items strong { display:block;overflow-wrap:anywhere;font-size:13px;font-weight:500 }
+#task-action-items span { display:block;color:#727b75;font-size:12px;margin-top:2px }
+.task-action-dialog #task-action-impact { margin-bottom:0;color:#5c6b61;font-size:12px }
+.task-action-dialog #task-action-error { color:#b1473e;margin-bottom:0;outline:none }
+#task-action-error:empty { display:none }
+.task-action-footer { display:flex;justify-content:flex-end;gap:9px;flex-shrink:0;padding:14px 22px;border-top:1px solid #e7ebe8;background:#fcfdfc }
+.task-action-dialog button { appearance:none;display:inline-flex;align-items:center;justify-content:center;font:inherit;font-size:13px;font-weight:500;line-height:1.4;padding:9px 14px;min-height:36px;border:1px solid #dde3de;border-radius:8px;color:#44534a;background:white;cursor:pointer;white-space:normal }
+.task-action-dialog button:hover { background:#f0f3f0 }
+.task-action-dialog #task-action-confirm { background:#397c5d;border-color:#397c5d;color:white }
+.task-action-dialog #task-action-confirm:hover { background:#306c50 }
+.task-action-dialog[data-action=delete] #task-action-confirm { background:#b4574b;border-color:#b4574b }
+.task-action-dialog[data-action=delete] #task-action-confirm:hover { background:#a44a3e }
+.task-action-dialog button:disabled,.task-action-dialog input:disabled { opacity:.55;cursor:wait }
+.task-action-dialog :is(button,input,summary):focus-visible { outline:2px solid #4c8965;outline-offset:3px }
+.task-action-dialog [hidden] { display:none!important }
+@media (max-width:380px),(max-height:460px) {
+  .task-action-body { padding:16px 16px 11px }
+  .task-action-dialog h2 { margin-bottom:11px;font-size:18px }
+  .task-action-task { padding:9px 11px }
+  .task-action-footer { padding:11px 16px }
+  #task-action-items { max-height:130px }
+}

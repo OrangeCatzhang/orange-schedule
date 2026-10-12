@@ -45,7 +45,7 @@ $('#widget-date').onchange=e=>{if(e.target.value)settings({anchor:e.target.value
 $('#widget-category').onchange=e=>settings({category:e.target.value});
 $('#toggle-done').onclick=()=>settings({showCompleted:!prefs.showCompleted});
 $('#show-completed').onchange=e=>settings({showCompleted:e.target.checked});
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.mode)settings({mode:b.dataset.mode});if(b.dataset.theme)settings({theme:b.dataset.theme});if(b.dataset.toggle)run(()=>api.toggleTask(b.dataset.toggle));if(b.dataset.edit)run(()=>api.editTask(b.dataset.edit));});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.mode)settings({mode:b.dataset.mode});if(b.dataset.theme)settings({theme:b.dataset.theme});if(b.dataset.toggle){const t=state.tasks.find(t=>t.id===b.dataset.toggle);if(t)run(()=>window.WeeklightTaskActions.act(t.id,t.done?'reopen':'complete'));}if(b.dataset.edit)run(()=>api.editTask(b.dataset.edit));});
 $('#quick-form').onsubmit=async e=>{
  e.preventDefault();if(busy)return;busy=true;$('#quick-submit').disabled=true;$('#quick-error').textContent='';
  try{const data=Object.fromEntries(new FormData(e.target));await api.saveTask({...data,duration:30,category:prefs.category==='all'?'work':prefs.category,priority:'normal',notes:''},1);e.target.elements.title.value='';if(data.date!==(prefs.anchor||today()))await api.widgetSettings({anchor:data.date});toast('已添加到日历');e.target.elements.title.focus();}

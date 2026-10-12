@@ -15,7 +15,7 @@ test('daily repetition includes both endpoints, including a one-day range',()=>{
   const options=Object.freeze({frequency:'daily',until:'2030-06-10'});
   const tasks=makeSeries(original,options);
   assert.equal(tasks.length,1);
-  assert.deepEqual(tasks[0],original);
+  const {seriesId,seriesIndex,...single}=tasks[0];assert.ok(seriesId);assert.equal(seriesIndex,0);assert.deepEqual(single,original);
   assert.notEqual(tasks[0],original,'Even a single generated task must be independent of the draft');
 });
 
@@ -53,7 +53,7 @@ test('daily tasks have unique IDs and preserve attributes without mutating the d
   const before=JSON.parse(JSON.stringify(original));
   const options=Object.freeze({frequency:'daily',until:'2030-06-13'});
   const tasks=makeSeries(original,options);
-  const attributes=task=>Object.fromEntries(Object.entries(task).filter(([key])=>!['id','date'].includes(key)));
+  const attributes=task=>Object.fromEntries(Object.entries(task).filter(([key])=>!['id','date','seriesId','seriesIndex'].includes(key)));
   assert.equal(tasks.length,4);
   assert.equal(new Set(tasks.map(task=>task.id)).size,4);
   assert.equal(new Set(tasks).size,4,'Generated tasks must be different objects');

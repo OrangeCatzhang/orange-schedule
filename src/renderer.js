@@ -87,7 +87,7 @@ function empty(title,desc){return '<div class="empty-state"><div class="empty-ic
 function renderList(pending){
  if(view==='inbox'){
   const hs=pending.filter(h=>filtered().some(t=>t.id===h.taskId)).reverse();
-  $('#calendar').innerHTML='<div class="list-view">'+(hs.length?hs.map(h=>{const t=state.tasks.find(t=>t.id===h.taskId);return '<div class="reminder-row"><h3>'+esc(t.title)+'</h3><p>'+t.date+' '+t.time+' · '+cats[t.category].name+'</p><div class="actions"><button class="small-button" data-reminder="'+t.id+'" data-action="done">✓ 已完成</button><button class="small-button" data-reminder="'+t.id+'" data-action="snooze">10 分钟后提醒</button><button class="text-button" data-reminder="'+t.id+'" data-action="dismiss">知道了</button></div></div>';}).join(''):empty('暂时没有待处理提醒','计划到达提醒时间后，会出现在这里。'))+'</div>';return;
+  $('#calendar').innerHTML='<div class="list-view">'+(hs.length?hs.map(h=>{const t=state.tasks.find(t=>t.id===h.taskId);return '<div class="reminder-row"><h3>'+esc(t.title)+'</h3><p>'+t.date+' '+t.time+' · '+cats[t.category].name+'</p><div class="actions"><button class="small-button" data-reminder="'+t.id+'" data-action="done">✓ 完成</button><button class="small-button" data-reminder="'+t.id+'" data-action="snooze">10 分钟后提醒</button><button class="text-button" data-reminder="'+t.id+'" data-action="dismiss">知道了</button></div></div>';}).join(''):empty('暂时没有待处理提醒','计划到达提醒时间后，会出现在这里。'))+'</div>';return;
  }
  let ts=filtered().filter(t=>view==='today'?(t.date===today()||isOverdue(t)):view==='done'?t.done:inRange(t));
  if(view!=='done')ts=ts.filter(matchesStatus);
@@ -138,12 +138,11 @@ function openEditor(t=null,date=selected,time='09:00'){
  syncRepeatOptions();
  openDialog($('#editor'));setTimeout(()=>f.elements.title.focus(),50);
 }
-function confirmDelete(t){return new Promise(resolve=>{$('#confirm-text').textContent='“'+t.title+'”将从日历中移除。';openDialog($('#confirm-dialog'));const finish=value=>{$('#confirm-dialog').close();resolve(value);};$('#confirm-no').onclick=()=>finish(false);$('#confirm-yes').onclick=()=>finish(true);$('#confirm-dialog').oncancel=()=>resolve(false);});}
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button,[data-task],.day-cell,.hour-cell');if(!b)return;
- if(b.dataset.reminder){await run(()=>api.reminderAction(b.dataset.reminder,b.dataset.action),'已更新提醒');return;}
+ if(b.dataset.reminder){await run(()=>b.dataset.action==='done'?window.WeeklightTaskActions.act(b.dataset.reminder,'complete'):api.reminderAction(b.dataset.reminder,b.dataset.action),'已更新提醒');return;}
  if(b.dataset.task){const t=state.tasks.find(t=>t.id===b.dataset.task);if(t)openEditor(t);return;}
- if(b.dataset.toggle){await run(()=>api.toggleTask(b.dataset.toggle));return;}
+ if(b.dataset.toggle){const t=state.tasks.find(t=>t.id===b.dataset.toggle);if(t)await run(()=>window.WeeklightTaskActions.act(t.id,t.done?'reopen':'complete'));return;}
  if(b.dataset.newDate){selected=b.dataset.newDate;openEditor(null,selected);return;}
  if(b.dataset.view){setView(b.dataset.view);return;}
  if(b.dataset.mode){mode=b.dataset.mode;render();return;}
@@ -181,7 +180,7 @@ $('#task-form').onsubmit=async e=>{
  catch(e){$('#form-error').textContent=e.message.replace(/^Error invoking remote method '[^']+': Error: /,'');}
  finally{busy=false;submit.disabled=false;}
 };
-$('#delete-task').onclick=async()=>{if(editing&&await confirmDelete(editing)){const r=await run(()=>api.deleteTask(editing.id),'计划已删除');if(r)$('#editor').close();}};
+$('#delete-task').onclick=async()=>{if(!editing)return;const id=editing.id;const result=await run(()=>window.WeeklightTaskActions.act(id,'delete'),'计划已删除');if(result){state=result;$('#editor').close();render();}};
 document.addEventListener('pointerdown',e=>{dragCandidate=!!e.target.closest('.event');});
 for(const name of ['pointerup','pointercancel'])document.addEventListener(name,()=>{dragCandidate=false;setTimeout(flushDeferredRender,0);});
 function dropCell(e){

@@ -7,7 +7,7 @@ const draft = { title: '工作日阅读', date: '2026-10-12', time: '09:00', dur
 const weekdays = (start, until) => makeSeries(cleanTask({ ...draft, date: start }), { frequency: 'weekdays', until });
 const dates = tasks => tasks.map(task => task.date);
 const addDays = (value, days) => { const date = new Date(value + 'T12:00:00'); date.setDate(date.getDate() + days); return dateKey(date); };
-const attributes = task => Object.fromEntries(Object.entries(task).filter(([key]) => !['id', 'date'].includes(key)));
+const attributes = task => Object.fromEntries(Object.entries(task).filter(([key]) => !['id', 'date', 'seriesId', 'seriesIndex'].includes(key)));
 const savedFields = task => ({
   id: task.id, title: task.title, date: task.date, time: task.time, duration: task.duration,
   category: task.category, reminder: task.reminder, priority: task.priority, notes: task.notes,

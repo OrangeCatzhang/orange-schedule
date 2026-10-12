@@ -1,6 +1,7 @@
-const {app,BrowserWindow,ipcMain,Tray,Menu,nativeImage,Notification,dialog,shell,powerMonitor}=require('electron');
+const {app,BrowserWindow,ipcMain,Tray,Menu,nativeImage,Notification,dialog,shell,powerMonitor,net}=require('electron');
 const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');
 const {cleanTask,dueTasks,makeSeries,validateState,at}=require('./core.cjs');
+const {validateSeriesTasks,previewTaskAction,applyTaskAction}=require('./task-series.cjs');
 const {createWidgetController}=require('./widget-controller.cjs');
 const {normalizePrefs}=require('./widget-model.cjs');
 const {messages,normalizeRotation,getCurrentMessage,advanceMessage}=require('./reminder-copy.cjs');
@@ -8,17 +9,19 @@ const APP_ID='local.weeklight.planner';
 const {createLoginSettings}=require('./login-settings.cjs');
 const loginSettings=createLoginSettings({app,loginItemName:APP_ID});
 const {resolveDataPath}=require('./data-path.cjs');
+const {createUpdateController}=require('./update-controller.cjs');
 const dataDir=resolveDataPath(app.getPath('userData'),process.env.WEEKLIGHT_DATA_DIR);
 fs.mkdirSync(dataDir,{recursive:true});app.setPath('userData',dataDir);
 app.setAppUserModelId(APP_ID);
 const dataFile=path.join(dataDir,'plans.json');
-let state={version:1,tasks:[],settings:{sound:true,popup:true,widget:normalizePrefs(),reminderRotation:normalizeRotation()},history:[]};
+let state={version:1,tasks:[],settings:{sound:true,popup:true,checkUpdates:true,widget:normalizePrefs(),reminderRotation:normalizeRotation()},history:[]};
 let startupError='';let win,tray,popup,widgetController,quitting=false;const notifications=new Set();
+const updateController=createUpdateController({currentVersion:app.getVersion(),fetchImpl:(url,options)=>net.fetch(url,options),onChange:()=>broadcast()});
 try{if(fs.existsSync(dataFile))state=validateState(JSON.parse(fs.readFileSync(dataFile,'utf8')));}
 catch(e){startupError='计划文件无法读取，已保留原文件。请从设置导入备份。'+e.message;fs.copyFileSync(dataFile,path.join(dataDir,'plans-recovery-'+Date.now()+'.json'));}
 function persist(next){const temp=dataFile+'.tmp';fs.writeFileSync(temp,JSON.stringify(next,null,2),'utf8');if(fs.existsSync(dataFile))fs.copyFileSync(dataFile,dataFile+'.bak');fs.renameSync(temp,dataFile);state=next;}
 function startupStatus(){try{return {autostart:loginSettings.getOpenAtLogin(),autostartError:''};}catch(e){return {autostart:false,autostartError:'无法读取 Windows 开机启动状态：'+e.message};}}
-function snapshot(){return {...state,dataDir,startupError,...startupStatus(),packaged:app.isPackaged,reminderMessage:getCurrentMessage(state.settings.reminderRotation),reminderMessageCount:messages.length};}
+function snapshot(){return {...state,update:updateController.snapshot(),dataDir,startupError,...startupStatus(),packaged:app.isPackaged,reminderMessage:getCurrentMessage(state.settings.reminderRotation),reminderMessageCount:messages.length};}
 function broadcast(){for(const w of [win,popup,widgetController?.getWindow()])if(w&&!w.isDestroyed())w.webContents.send('state',snapshot());}
 function change(fn){const next=structuredClone(state);fn(next);persist(next);broadcast();return snapshot();}
 function nextReminderMessage(next){next.settings.reminderRotation=advanceMessage(next.settings.reminderRotation).rotation;}
@@ -73,16 +76,21 @@ app.whenReady().then(()=>{
  tray.setContextMenu(Menu.buildFromTemplate([{label:'打开橙子日程',click:showMain},{label:'桌面便签',click:()=>widgetController.open()},{label:'新建计划',click:()=>{showMain();win.webContents.send('new-task');}},{type:'separator'},{label:'退出橙子日程（停止提醒）',click:()=>{quitting=true;app.quit();}}]));
  tray.on('double-click',showMain);tray.on('click',showMain);
  handle('get',()=>snapshot());
- handle('save-task',(input,repeat=1)=>{const old=state.tasks.find(t=>t.id===input.id);const t=cleanTask({...input,done:old?old.done:input.done},old);const created=old?[]:makeSeries(t,typeof repeat==='object'?repeat:Number(repeat));if(state.tasks.length+created.length>10000)throw new Error('计划总数不能超过 10000 项，请缩短重复范围或先导出归档');return change(s=>{if(old){s.tasks=s.tasks.map(x=>x.id===t.id?t:x);if(t.done)s.history.forEach(h=>{if(h.taskId===t.id)h.dismissed=true;});}else s.tasks.push(...created);});});
+ handle('save-task',(input,repeat=1)=>{const old=state.tasks.find(t=>t.id===input.id);if(input.id&&!old)throw new Error('计划已被删除，无法保存旧编辑内容');const t=cleanTask({...input,done:old?old.done:input.done},old);const created=old?[]:makeSeries(t,typeof repeat==='object'?repeat:Number(repeat));if(state.tasks.length+created.length>10000)throw new Error('计划总数不能超过 10000 项，请缩短重复范围或先导出归档');return change(s=>{if(old){s.tasks=s.tasks.map(x=>x.id===t.id?t:x);if(t.done)s.history.forEach(h=>{if(h.taskId===t.id)h.dismissed=true;});}else s.tasks.push(...created);});});
+ handle('preview-task-action',(id,action)=>previewTaskAction(state.tasks,id,action));
+ handle('apply-task-action',request=>change(s=>applyTaskAction(s,request)));
  handle('toggle-task',id=>change(s=>{const t=s.tasks.find(x=>x.id===id);if(!t)throw new Error('计划不存在');t.done=!t.done;if(t.done){t.snoozeUntil=null;s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});}}));
  handle('delete-task',id=>change(s=>{s.tasks=s.tasks.filter(t=>t.id!==id);s.history=s.history.filter(h=>h.taskId!==id);}));
  handle('move-task',(id,date,time)=>{const old=state.tasks.find(x=>x.id===id);if(!old)throw new Error('计划不存在');const t=cleanTask({...old,date,time:time||old.time},old);return change(s=>{s.tasks=s.tasks.map(x=>x.id===id?t:x);s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});});});
  handle('reminder-action',(id,action)=>change(s=>{const t=s.tasks.find(x=>x.id===id);if(!t)return;if(action==='snooze'){t.snoozeUntil=Date.now()+600000;}else if(action==='done'){t.done=true;t.snoozeUntil=null;}else if(action!=='dismiss')throw new Error('操作无效');s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});}));
- handle('settings',settings=>{if(typeof settings.autostart==='boolean')loginSettings.setOpenAtLogin(settings.autostart);return change(s=>{if(typeof settings.sound==='boolean')s.settings.sound=settings.sound;if(typeof settings.popup==='boolean')s.settings.popup=settings.popup;});});
+ handle('settings',settings=>{if(typeof settings.autostart==='boolean')loginSettings.setOpenAtLogin(settings.autostart);return change(s=>{if(typeof settings.sound==='boolean')s.settings.sound=settings.sound;if(typeof settings.popup==='boolean')s.settings.popup=settings.popup;if(typeof settings.checkUpdates==='boolean')s.settings.checkUpdates=settings.checkUpdates;});});
+ handle('check-updates',()=>updateController.check({manual:true}));
+ handle('dismiss-update',()=>updateController.dismiss());
+ handle('download-update',async()=>{const release=updateController.snapshot().release;if(!release)throw new Error('请先检查是否有可用更新');await shell.openExternal(release.url);return true;});
  handle('test-reminder',()=>{change(nextReminderMessage);notify('橙子日程提醒已准备好','这是一条测试通知。\n'+notificationEncouragement());showReminder();return true;});
  handle('next-reminder-message',()=>change(nextReminderMessage));
  handle('export',async()=>{const r=await dialog.showSaveDialog(win,{title:'导出橙子日程备份',defaultPath:path.join(dataDir,'橙子日程备份-'+new Date().toISOString().slice(0,10)+'.json'),filters:[{name:'JSON 备份',extensions:['json']}]});if(!r.canceled){fs.writeFileSync(r.filePath,JSON.stringify(state,null,2),'utf8');return r.filePath;}return null;});
- handle('import',async()=>{const r=await dialog.showOpenDialog(win,{title:'导入橙子日程备份',properties:['openFile'],filters:[{name:'JSON 备份',extensions:['json']}]});if(r.canceled)return null;if(fs.statSync(r.filePaths[0]).size>20*1024*1024)throw new Error('备份文件超过 20 MB');const incoming=validateState(JSON.parse(fs.readFileSync(r.filePaths[0],'utf8').replace(/^\uFEFF/,'')));const confirm=await dialog.showMessageBox(win,{type:'question',buttons:['取消','导入并合并'],defaultId:0,cancelId:0,message:'导入 '+incoming.tasks.length+' 项计划？',detail:'相同 ID 的计划将使用备份中的内容，其余现有计划保留。导入前会自动保存完整备份。'});if(confirm.response!==1)return null;fs.writeFileSync(path.join(dataDir,'before-import-'+Date.now()+'.json'),JSON.stringify(state,null,2),'utf8');return change(s=>{const map=new Map(s.tasks.map(t=>[t.id,t]));incoming.tasks.forEach(t=>map.set(t.id,t));if(map.size>10000)throw new Error('合并后超过 10000 项上限');s.tasks=[...map.values()];});});
+ handle('import',async()=>{const r=await dialog.showOpenDialog(win,{title:'导入橙子日程备份',properties:['openFile'],filters:[{name:'JSON 备份',extensions:['json']}]});if(r.canceled)return null;if(fs.statSync(r.filePaths[0]).size>20*1024*1024)throw new Error('备份文件超过 20 MB');const incoming=validateState(JSON.parse(fs.readFileSync(r.filePaths[0],'utf8').replace(/^\uFEFF/,'')));const confirm=await dialog.showMessageBox(win,{type:'question',buttons:['取消','导入并合并'],defaultId:0,cancelId:0,message:'导入 '+incoming.tasks.length+' 项计划？',detail:'相同 ID 的计划将使用备份中的内容，其余现有计划保留。导入前会自动保存完整备份。'});if(confirm.response!==1)return null;fs.writeFileSync(path.join(dataDir,'before-import-'+Date.now()+'.json'),JSON.stringify(state,null,2),'utf8');return change(s=>{const map=new Map(s.tasks.map(t=>[t.id,t]));incoming.tasks.forEach(t=>{const old=map.get(t.id);if(old?.seriesId&&t.seriesId===undefined)t={...t,seriesId:old.seriesId,seriesIndex:old.seriesIndex};map.set(t.id,t);});validateSeriesTasks([...map.values()]);if(map.size>10000)throw new Error('合并后超过 10000 项上限');s.tasks=[...map.values()];});});
  handle('open-data',()=>shell.openPath(dataDir));
  handle('show-main',()=>showMain());
  handle('open-widget',()=>{widgetController.open();return snapshot();});
@@ -91,6 +99,8 @@ app.whenReady().then(()=>{
  handle('edit-task',id=>{if(!state.tasks.some(t=>t.id===id))throw new Error('该计划已被删除');showMain();win.webContents.send('edit-task',id);});
  if(process.argv.includes('--widget'))widgetController.open();else widgetController.restore();
  handle('quit',()=>{quitting=true;app.quit();});
+ const automaticUpdateCheck=()=>{if(state.settings.checkUpdates)updateController.check({manual:false});};
+ setTimeout(automaticUpdateCheck,7000).unref();setInterval(automaticUpdateCheck,6*60*60*1000).unref();
  setTimeout(tick,3000);setInterval(tick,5000);powerMonitor.on('resume',()=>setTimeout(tick,1500));
 });
 app.on('before-quit',()=>{quitting=true;try{widgetController?.shutdown();}catch(e){console.error('Widget bounds not saved:',e.message);}});
