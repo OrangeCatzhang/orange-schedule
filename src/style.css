@@ -154,6 +154,9 @@ h1{font-weight:650;font-size:28px;line-height:1.35;letter-spacing:-.5px}
 .list-view .task-info strong{flex:1;min-width:150px;font-size:14px}
 .list-view .task-info p{margin:0;font-size:12px}
 .list-view .task-info .tag{margin:0;font-size:11px}
+.list-view .task-row.has-note{align-items:flex-start}
+.list-view .has-note .task-info{row-gap:5px}
+.list-view .task-note{display:block;flex:0 0 100%;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:1.5;color:#747b82}
 .overdue-group .list-group-title{color:#a2603e}
 .overdue-group .list-group-title span{background:#f8ebdf;color:#975b36}
 .group-description{font-size:12px;color:#9a785e;margin:0 0 6px}

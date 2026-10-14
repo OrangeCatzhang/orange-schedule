@@ -102,7 +102,10 @@ function renderWeek(){
  return '<div class="week-column">'+Array.from({length:24},(_,h)=>'<div class="hour-cell" data-date="'+key(d)+'" data-time="'+String(h).padStart(2,'0')+':00"></div>').join('')+placements.map(e=>event(e.t,';top:'+e.start*1.2+'px;height:'+Math.min(Math.max(28,e.t.duration*1.2-3),1728-e.start*1.2)+'px;left:calc('+e.lane/e.width*100+'% + 2px);width:calc('+100/e.width+'% - 4px)','week-event')).join('')+(key(d)===today()?'<div class="now-line" style="top:'+((new Date().getHours()*60+new Date().getMinutes())*1.2)+'px"></div>':'')+'</div>';
  }).join('')+'</div></div>';
 }
-function row(t){return '<div class="task-row '+(t.done?'done':'')+(isOverdue(t)?' overdue':'')+'"><button class="task-check '+(t.done?'checked':'')+'" data-toggle="'+esc(t.id)+'" aria-label="'+esc(tr(t.done?'取消完成 {title}':'完成 {title}',{title:t.title}))+'">'+(t.done?'✓':'')+'</button><div class="task-info" role="button" tabindex="0" data-task="'+esc(t.id)+'"><strong>'+esc(t.title)+(t.priority==='high'?' <span class="event-important">◆</span>':'')+'</strong><p>'+(isOverdue(t)?'<span class="overdue-date">'+fmt(parse(t.date))+' · </span>':'')+t.time+' · '+tr('{count} 分钟',{count:t.duration})+(t.reminder>=0?tr(' · 提醒'):'')+'</p><span class="tag" style="background:'+cats[t.category].bg+';color:'+cats[t.category].ink+'">'+tr(cats[t.category].short)+'</span></div></div>';}
+function row(t,previewNotes=false){
+ const note=previewNotes===true?String(t.notes||'').replace(/\s+/g,' ').trim():'';
+ return '<div class="task-row '+(t.done?'done':'')+(isOverdue(t)?' overdue':'')+(note?' has-note':'')+'"><button class="task-check '+(t.done?'checked':'')+'" data-toggle="'+esc(t.id)+'" aria-label="'+esc(tr(t.done?'取消完成 {title}':'完成 {title}',{title:t.title}))+'">'+(t.done?'✓':'')+'</button><div class="task-info" role="button" tabindex="0" data-task="'+esc(t.id)+'"><strong>'+esc(t.title)+(t.priority==='high'?' <span class="event-important">◆</span>':'')+'</strong><p>'+(isOverdue(t)?'<span class="overdue-date">'+fmt(parse(t.date))+' · </span>':'')+t.time+' · '+tr('{count} 分钟',{count:t.duration})+(t.reminder>=0?tr(' · 提醒'):'')+'</p><span class="tag" style="background:'+cats[t.category].bg+';color:'+cats[t.category].ink+'">'+tr(cats[t.category].short)+'</span>'+(note?'<span class="task-note" title="'+esc(t.notes)+'">'+esc(note)+'</span>':'')+'</div></div>';
+}
 function empty(title,desc){return '<div class="empty-state"><div class="empty-icon">'+icon('leaf')+'</div><h3>'+tr(title)+'</h3><p>'+tr(desc)+'</p><button class="secondary" data-action="new">'+icon('plus')+' '+tr('安排一件事')+'</button></div>';}
 function renderList(pending){
  if(view==='inbox'){
@@ -115,8 +118,8 @@ function renderList(pending){
  let content='';
  if(view==='today'){
   const overdue=ts.filter(isOverdue),current=ts.filter(t=>t.date===today());
-  if(overdue.length)content+='<section class="today-group overdue-group"><h3 class="list-group-title">'+tr('逾期未完成')+' <span>'+overdue.length+'</span></h3><p class="group-description">'+tr('可以完成这些计划，或点击修改日期。')+'</p>'+overdue.map(row).join('')+'</section>';
-  if(current.length)content+='<section class="today-group"><h3 class="list-group-title">'+tr('今天')+' <span>'+current.length+'</span></h3>'+current.map(row).join('')+'</section>';
+  if(overdue.length)content+='<section class="today-group overdue-group"><h3 class="list-group-title">'+tr('逾期未完成')+' <span>'+overdue.length+'</span></h3><p class="group-description">'+tr('可以完成这些计划，或点击修改日期。')+'</p>'+overdue.map(task=>row(task,true)).join('')+'</section>';
+  if(current.length)content+='<section class="today-group"><h3 class="list-group-title">'+tr('今天')+' <span>'+current.length+'</span></h3>'+current.map(task=>row(task,true)).join('')+'</section>';
  }else content=groups.map(d=>'<section class="list-day-group" data-list-date="'+d+'"><h3 class="list-group-title">'+fmt(parse(d))+' · '+weekday(parse(d))+'<span>'+ts.filter(t=>t.date===d).length+'</span>'+(view==='calendar'?'<button type="button" class="list-day-add" data-new-date="'+d+'" aria-label="'+esc(tr('{date} 添加计划',{date:d}))+'">'+icon('plus')+tr('添加计划')+'</button>':'')+'</h3>'+ts.filter(t=>t.date===d).map(row).join('')+'</section>').join('');
  const emptyTitle=view==='done'||listStatus==='done'?'还没有已完成的计划':listStatus==='todo'?'当前没有待办计划':'这段时间还没有计划';
  $('#calendar').innerHTML='<div class="list-view">'+(content||empty(query?'没有找到匹配的计划':emptyTitle,query?'试试其他关键词，或清除搜索。':listStatus!=='all'?'可以切换清单状态，或添加新的计划。':'点击「新建计划」，安排下一步。'))+'</div>';

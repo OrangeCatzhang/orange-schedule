@@ -1,6 +1,6 @@
 {
   "name": "weeklight",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "橙子日程 · Windows 桌面日历与待办清单",
   "main": "src/main.cjs",
   "author": "OrangeCatzhang",
@@ -34,7 +34,7 @@
     "appId": "local.weeklight.planner",
     "productName": "橙子日程",
     "directories": {
-      "output": "outputs/weeklight-1.2.0"
+      "output": "outputs/weeklight-1.2.1"
     },
     "files": [
       "src/**/*",

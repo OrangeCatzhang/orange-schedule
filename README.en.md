@@ -49,6 +49,8 @@ The current version is **1.2.0**. The installer does not yet use a commercial co
 
 Click **New task** or press **N**. Click a date to view its plans, double-click an empty date area to create a plan, or click an existing plan to edit it. Use **Ctrl+K** to search titles and notes.
 
+In **Today**, tasks with notes show a single line of smaller gray text beneath their details, so short notes can be read without opening the editor. Longer notes end with an ellipsis; hover over the preview to see the note text. Line breaks are collapsed only in the preview, leaving the saved notes unchanged. Tasks without notes do not gain an extra row.
+
 In the **List** view, click **+ Add task** beside a date heading to add another task for that day. The date is filled in automatically, and the button remains available after saving. Multiple independent plans can share the same date and time.
 
 When creating a plan, set **Repeat** to **Every day**, then choose **Repeat until (inclusive)**. The default range covers 30 days starting from the start date; you can change the end date. For example, October 9 through November 8 creates 31 occurrences with the same start time and reminder settings. Editing an occurrence affects only that day. When completing, restoring or deleting a task, choose **This task only** or **This and following tasks**. The series ends on the selected date; create another series if you want to continue it.
