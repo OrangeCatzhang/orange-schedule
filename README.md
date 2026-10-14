@@ -1,3 +1,5 @@
+**简体中文** | [English](README.en.md)
+
 <img src="src/assets/icon.png" width="96" height="96" alt="橙子日程图标：橙子日历与完成勾选">
 
 # 橙子日程：Windows 开源日程管理、桌面日历与待办清单
@@ -6,7 +8,7 @@
 
 应用使用 Electron 构建，提供可直接安装的 Windows EXE 安装包，无需单独安装 Node.js 或浏览器。计划与设置保存在当前 Windows 用户的数据目录中，支持离线使用，无需注册账号。源码采用 MIT 许可证。
 
-Orange Schedule（橙子日程）is a free, open-source Windows calendar planner and to-do list app with desktop sticky notes, weekly planning, scheduled reminders, and offline local storage.
+应用界面和内置名言诗词目前为简体中文；项目介绍提供中文和 [English](README.en.md) 两个版本。
 
 ![橙子日程 Windows 日程管理软件：四周日历、任务分类和周计划](docs/images/calendar.png)
 
