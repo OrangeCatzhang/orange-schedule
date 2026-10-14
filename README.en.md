@@ -14,13 +14,13 @@ The app supports **English and Simplified Chinese**. Choose a language during in
 
 ## Download and Install
 
-**[Download the Windows installer (1.2.0, x64)](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.2.0/OrangeSchedule-Setup-1.2.0.exe)** · [All releases and checksums](https://github.com/OrangeCatzhang/orange-schedule/releases)
+**[Download the Windows installer (1.2.1, x64)](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.2.1/OrangeSchedule-Setup-1.2.1.exe)** · [All releases and checksums](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 The source code is hosted on GitHub. Windows installers are distributed publicly through GitHub Releases and are not stored in the source repository.
 
 Run the downloaded installer, choose **English** or **简体中文**, then choose an installation location when prompted. End users do not need Node.js or build tools. The installer can create desktop and Start menu shortcuts, and the installed app can be configured to start with Windows.
 
-The current version is **1.2.0**. The installer does not yet use a commercial code-signing certificate, so Windows may show an unknown publisher warning. Check the download source and the SHA-256 checksum provided on the release page.
+The current version is **1.2.1**. The installer does not yet use a commercial code-signing certificate, so Windows may show an unknown publisher warning. Check the download source and the SHA-256 checksum provided on the release page.
 
 ## Features
 
@@ -81,7 +81,7 @@ The app displays release notes. **Download installer** opens the Windows EXE for
 
 Since 1.1.11, update checks first read a public version file in the repository and make one fallback attempt through the GitHub Releases API only if that fails. This reduces reliance on the shared anonymous API quota. The public file is still subject to network and access restrictions. If both sources fail, Settings shows the reason and keeps **Open official downloads** available. Plans and reminders continue to work, and failed checks do not modify local plans.
 
-**Versions 1.1.8 and earlier do not have update checks and require a manual installation of the current version. If 1.1.9 or 1.1.10 reports a GitHub rate limit, download from this page and manually upgrade to 1.2.0 once to use the public version file.**
+**Versions 1.1.8 and earlier do not have update checks and require a manual installation of the current version. If 1.1.9 or 1.1.10 reports a GitHub rate limit, download from this page and manually upgrade to 1.2.1 once to use the public version file.**
 
 ### Classical Quotations in Reminders
 
@@ -135,7 +135,7 @@ Version 1.1.12 uses consistent window and taskbar icons and separates developmen
 
 ### Is the downloaded EXE an installer or a standalone program?
 
-`OrangeSchedule-Setup-1.2.0.exe` is an installer. After installation, launch Orange Schedule from the desktop or Start menu; no separate Node.js installation is needed. It is not a single-file portable app. If you build from source and use the unpacked version, keep the entire `win-unpacked` folder together.
+`OrangeSchedule-Setup-1.2.1.exe` is an installer. After installation, launch Orange Schedule from the desktop or Start menu; no separate Node.js installation is needed. It is not a single-file portable app. If you build from source and use the unpacked version, keep the entire `win-unpacked` folder together.
 
 ## Data and Privacy
 
@@ -179,7 +179,7 @@ npm run test:branding
 npm run test:language
 ```
 
-Desktop tests require an interactive Windows desktop and use isolated test data. Build artifacts are written to `outputs/weeklight-1.2.0/`: `OrangeSchedule-Setup-1.2.0.exe` is the installer, and `win-unpacked/橙子日程.exe` can run directly if the entire `win-unpacked` folder is retained.
+Desktop tests require an interactive Windows desktop and use isolated test data. Build artifacts are written to `outputs/weeklight-1.2.1/`: `OrangeSchedule-Setup-1.2.1.exe` is the installer, and `win-unpacked/橙子日程.exe` can run directly if the entire `win-unpacked` folder is retained.
 
 `npm run test:ui` provides additional main-calendar regression checks. The optional `scripts/prepare-runtime.cjs` prepares Electron for offline use and requires Python and an official Electron ZIP with a matching checksum. It is not needed for a normal `npm ci` installation.
 

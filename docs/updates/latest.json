@@ -1,15 +1,15 @@
 {
-  "tag_name": "v1.2.0",
+  "tag_name": "v1.2.1",
   "draft": false,
   "prerelease": false,
-  "published_at": "2026-10-14T01:32:54.000Z",
-  "body": "## 中文\n\n橙子日程 1.2.0 支持简体中文与 English，同一个 Windows 安装包即可选择语言。\n\n- 安装开始时选择语言；首次启动按安装时的选择显示界面。\n- 「设置与备份 → 界面语言」可随时切换，无需重启。日历、清单、桌面便签、提醒、托盘、备份对话框与更新提示同步切换。\n- 保留正在编辑的内容、便签快速输入和重复事项确认范围，用户填写的计划及备注保持原文。\n- 120 条古典名言与诗词新增对应英文译文及出处，保留原有轮换进度。\n- 适配英文长文案和小窗口，修正英文跨年周日期。\n\nWindows 10 / 11 x64。下载下方的 `OrangeSchedule-Setup-1.2.0.exe`，退出旧版后安装到原位置。已经保存的语言偏好在后续升级时继续保留；程序文件、快捷方式、安装标识和 `weeklight` 数据目录保持兼容。\n\n安装包 SHA-256：`a5ab1f18047ee01c618ff25e6c51d256b7078a245afd2bc1f717946986e0f60e`\n\n## English\n\nOrange Schedule 1.2.0 supports English and Simplified Chinese in one Windows installer.\n\n- Select your language at the start of installation. The app uses this selection on its first launch.\n- Switch anytime under **Settings & backup → App language**, without restarting. The calendar, task lists, desktop notes, reminders, tray, backup dialogs and update notices follow your choice.\n- Unsaved editor and quick-add drafts, recurring-task action scopes, and your original task titles and notes are preserved.\n- All 120 classical Chinese quotations now have corresponding English renderings and source labels. Switching languages preserves the quotation cycle.\n- English layouts fit smaller windows; cross-year week ranges show both years correctly.\n\nFor Windows 10 / 11 x64, download `OrangeSchedule-Setup-1.2.0.exe` below. Quit the old app and install to the same location. Later upgrades retain your saved language preference. The executable and shortcut names remain 橙子日程, and the installation identity and `weeklight` data directory remain compatible.\n\nSHA-256: `a5ab1f18047ee01c618ff25e6c51d256b7078a245afd2bc1f717946986e0f60e`\n\nValidation: 163 unit tests, packaged multi-window language and persistence checks, installer language selection tests, and native Windows taskbar icon regression passed.",
+  "published_at": "2026-10-14T06:34:02.000Z",
+  "body": "## 中文\n\n橙子日程 1.2.1：在「今天」列表直接查看计划备注。\n\n- 有备注的计划下方新增一行灰色小字，短备注无需进入编辑界面即可阅读。\n- 长备注显示省略号，鼠标悬停可查看备注内容；多行备注合并为单行预览，保存的原始内容保持不变。\n- 同时适用于当天计划和逾期未完成事项。空白备注不额外占行，保留点击编辑、勾选完成和筛选操作。\n- 支持中文和英文界面。\n\n下载下方的 `OrangeSchedule-Setup-1.2.1.exe`。保存正在编辑的计划，从托盘退出旧版，再安装到原位置。Windows 10 / 11 x64，已有计划和语言设置继续保留。\n\nSHA-256：`a8e4282517431f70b1b3ee42889e094ac905c51f1b65ff62d42261c1b1f052a2`\n\n## English\n\nOrange Schedule 1.2.1 adds inline note previews to **Today**.\n\n- Tasks with notes show one line of smaller gray text beneath their details, so short notes can be read without opening the editor.\n- Longer notes end with an ellipsis. Hover over a preview to see the note text. Line breaks are collapsed only for display; saved notes stay unchanged.\n- Applies to today's tasks and overdue incomplete tasks. Blank notes do not add an empty row. Editing, completion and filters keep working as before.\n- Available in both English and Chinese interfaces.\n\nDownload `OrangeSchedule-Setup-1.2.1.exe` below. Save your edits, quit the old app from the tray, and install to the same location. For Windows 10 / 11 x64. Existing plans and language preferences are retained.\n\nSHA-256: `a8e4282517431f70b1b3ee42889e094ac905c51f1b65ff62d42261c1b1f052a2`",
   "assets": [
     {
-      "name": "OrangeSchedule-Setup-1.2.0.exe",
+      "name": "OrangeSchedule-Setup-1.2.1.exe",
       "state": "uploaded",
-      "size": 111885505,
-      "browser_download_url": "https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.2.0/OrangeSchedule-Setup-1.2.0.exe"
+      "size": 111885739,
+      "browser_download_url": "https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.2.1/OrangeSchedule-Setup-1.2.1.exe"
     }
   ]
 }
