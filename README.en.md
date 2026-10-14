@@ -8,19 +8,19 @@ Orange Schedule (橙子日程) is a **free, open-source Windows calendar planner
 
 Built with Electron, the app includes everything needed in its Windows installer; users do not need to install Node.js or a browser separately. Plans and settings stay in the current Windows user's data directory. Everyday planning works offline without an account. The source code is licensed under MIT.
 
-The app supports **English and Simplified Chinese**. Choose a language during installation, or change it anytime under **Settings & backup → Interface language**. The calendar, desktop notes, reminders and tray menus follow the selected language.
+The app supports **English and Simplified Chinese**. Choose a language during installation, or change it anytime under **Settings & backup → App language**. The calendar, desktop notes, reminders and tray menus follow the selected language.
 
 ![Orange Schedule for Windows: four-week calendar, task categories and weekly planning](docs/images/calendar-en.png)
 
 ## Download and Install
 
-**[Download the Windows installer (1.1.12, x64)](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.1.12/OrangeSchedule-Setup-1.1.12.exe)** · [All releases and checksums](https://github.com/OrangeCatzhang/orange-schedule/releases)
+**[Download the Windows installer (1.2.0, x64)](https://github.com/OrangeCatzhang/orange-schedule/releases/download/v1.2.0/OrangeSchedule-Setup-1.2.0.exe)** · [All releases and checksums](https://github.com/OrangeCatzhang/orange-schedule/releases)
 
 The source code is hosted on GitHub. Windows installers are distributed publicly through GitHub Releases and are not stored in the source repository.
 
 Run the downloaded installer, choose **English** or **简体中文**, then choose an installation location when prompted. End users do not need Node.js or build tools. The installer can create desktop and Start menu shortcuts, and the installed app can be configured to start with Windows.
 
-The current version is **1.1.12**. The installer does not yet use a commercial code-signing certificate, so Windows may show an unknown publisher warning. Check the download source and the SHA-256 checksum provided on the release page.
+The current version is **1.2.0**. The installer does not yet use a commercial code-signing certificate, so Windows may show an unknown publisher warning. Check the download source and the SHA-256 checksum provided on the release page.
 
 ## Features
 
@@ -77,13 +77,13 @@ Enable **Settings & backup → Automatically check for updates** to check once a
 
 The app displays release notes. **Download installer** opens the Windows EXE for the corresponding repository release in your browser. After downloading, quit the old version from the tray and install to the same location. This feature provides update notices and a download link; it does not install updates silently.
 
-Since 1.1.11, update checks first read a public version file in the repository and make one fallback attempt through the GitHub Releases API only if that fails. This reduces reliance on the shared anonymous API quota. The public file is still subject to network and access restrictions. If both sources fail, Settings shows the reason and keeps **Open official download page** available. Plans and reminders continue to work, and failed checks do not modify local plans.
+Since 1.1.11, update checks first read a public version file in the repository and make one fallback attempt through the GitHub Releases API only if that fails. This reduces reliance on the shared anonymous API quota. The public file is still subject to network and access restrictions. If both sources fail, Settings shows the reason and keeps **Open official downloads** available. Plans and reminders continue to work, and failed checks do not modify local plans.
 
-**Versions 1.1.8 and earlier do not have update checks and require a manual installation of the current version. If 1.1.9 or 1.1.10 reports a GitHub rate limit, download from this page and manually upgrade to 1.1.12 once to use the public version file.**
+**Versions 1.1.8 and earlier do not have update checks and require a manual installation of the current version. If 1.1.9 or 1.1.10 reports a GitHub rate limit, download from this page and manually upgrade to 1.2.0 once to use the public version file.**
 
 ### Classical Quotations in Reminders
 
-System notifications and reminder windows display the same quotation and its source. All selections come from classical Chinese sayings and poetry, including passages on learning and reflection from the *Analects*, perseverance from *Xunzi*, and perspective and calm from Tang and Song poetry. Chinese mode uses Simplified Chinese characters and modern punctuation. English mode displays this project’s English renderings of the Chinese originals, with translated source labels and links to the original texts. These are not quotations from a published modern translation.
+System notifications and reminder windows display the same quotation and its source. All selections come from classical Chinese sayings and poetry, including passages on learning and reflection from the *Analects*, perseverance from *Xunzi*, and perspective and calm from Tang and Song poetry. Chinese mode uses Simplified Chinese characters and modern punctuation. English mode displays this project’s English renderings of the Chinese originals, with translated source labels; links to the original texts are retained in the quotation catalog. These are not quotations from a published modern translation.
 
 There are 120 quotations. None repeats before the current cycle is complete, and the first quotation of a new cycle differs from the previous one. The cycle position is stored locally and continues after restarting or switching languages. **Another quote** changes only the displayed text; it does not send another notification or alter the task.
 
@@ -101,7 +101,7 @@ Sticky notes are separate windows and are not embedded in the Explorer desktop. 
 
 ### How do I switch between English and Chinese?
 
-The same installer includes both languages. On first installation, the app uses the selected installer language. Upgrading a Chinese-only profile without a saved language preference also uses the installer's selection. Once you save a language preference, subsequent upgrades preserve it. Change it anytime under **Settings & backup → Interface language**; no restart is required.
+The same installer includes both languages. On first installation, the app uses the selected installer language. Upgrading a Chinese-only profile without a saved language preference also uses the installer's selection. Once you save a language preference, subsequent upgrades preserve it. Change it anytime under **Settings & backup → App language**; no restart is required.
 
 Switching language preserves your plans, notes, backups and quotation rotation. To keep existing installations and Windows startup entries compatible, the executable and shortcut names remain **橙子日程**, and the data directory remains `weeklight`.
 
@@ -133,7 +133,7 @@ Version 1.1.12 uses consistent window and taskbar icons and separates developmen
 
 ### Is the downloaded EXE an installer or a standalone program?
 
-`OrangeSchedule-Setup-1.1.12.exe` is an installer. After installation, launch Orange Schedule from the desktop or Start menu; no separate Node.js installation is needed. It is not a single-file portable app. If you build from source and use the unpacked version, keep the entire `win-unpacked` folder together.
+`OrangeSchedule-Setup-1.2.0.exe` is an installer. After installation, launch Orange Schedule from the desktop or Start menu; no separate Node.js installation is needed. It is not a single-file portable app. If you build from source and use the unpacked version, keep the entire `win-unpacked` folder together.
 
 ## Data and Privacy
 
@@ -177,7 +177,7 @@ npm run test:branding
 npm run test:language
 ```
 
-Desktop tests require an interactive Windows desktop and use isolated test data. Build artifacts are written to `outputs/weeklight-1.1.12/`: `OrangeSchedule-Setup-1.1.12.exe` is the installer, and `win-unpacked/橙子日程.exe` can run directly if the entire `win-unpacked` folder is retained.
+Desktop tests require an interactive Windows desktop and use isolated test data. Build artifacts are written to `outputs/weeklight-1.2.0/`: `OrangeSchedule-Setup-1.2.0.exe` is the installer, and `win-unpacked/橙子日程.exe` can run directly if the entire `win-unpacked` folder is retained.
 
 `npm run test:ui` provides additional main-calendar regression checks. The optional `scripts/prepare-runtime.cjs` prepares Electron for offline use and requires Python and an official Electron ZIP with a matching checksum. It is not needed for a normal `npm ci` installation.
 
