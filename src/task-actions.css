@@ -58,3 +58,7 @@ dialog.task-action-dialog {
   .task-action-footer { padding:11px 16px }
   #task-action-items { max-height:130px }
 }
+
+.task-action-option>span{min-width:0;overflow-wrap:anywhere}
+.task-action-footer button{min-width:0;overflow-wrap:anywhere}
+html[lang=en] .task-action-option{align-items:flex-start}

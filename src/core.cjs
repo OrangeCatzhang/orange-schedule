@@ -2,6 +2,7 @@ const {normalizePrefs}=require('./widget-model.cjs');
 const crypto = require('node:crypto');
 const {normalizeRotation}=require('./reminder-copy.cjs');
 const {validateSeriesTasks}=require('./task-series.cjs');
+const {normalizeLanguage}=require('./i18n.js');
 const CATEGORIES = ['work','study','life'];
 function dateKey(d) { return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-'); }
 function at(task) { return new Date(task.date+'T'+task.time+':00').getTime(); }
@@ -67,6 +68,6 @@ function validateState(raw) {
     return c;
   });
   validateSeriesTasks(tasks);
-  return {version:1,tasks,settings:{sound:raw.settings?.sound!==false,popup:raw.settings?.popup!==false,checkUpdates:raw.settings?.checkUpdates!==false,widget:normalizePrefs(raw.settings?.widget),reminderRotation:normalizeRotation(raw.settings?.reminderRotation)},history:Array.isArray(raw.history)?raw.history.filter(e=>e&&typeof e.id==='string'&&typeof e.taskId==='string'&&Number.isFinite(e.at)).slice(-300):[]};
+  return {version:1,tasks,settings:{language:normalizeLanguage(raw.settings?.language),sound:raw.settings?.sound!==false,popup:raw.settings?.popup!==false,checkUpdates:raw.settings?.checkUpdates!==false,widget:normalizePrefs(raw.settings?.widget),reminderRotation:normalizeRotation(raw.settings?.reminderRotation)},history:Array.isArray(raw.history)?raw.history.filter(e=>e&&typeof e.id==='string'&&typeof e.taskId==='string'&&Number.isFinite(e.at)).slice(-300):[]};
 }
 module.exports={dateKey,at,cleanTask,dueTasks,makeSeries,validateState};

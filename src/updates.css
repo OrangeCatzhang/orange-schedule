@@ -9,3 +9,7 @@
 .update-install-note{font-size:11px;color:#747b82;line-height:1.6;margin-top:8px}
 
 .update-manual-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}.update-manual-line .text-button{padding:4px 0;font-size:12px;color:#355e4b}.update-manual-line span{font-size:11px;color:#747b82}
+
+.update-banner>div:first-child,.update-version-line>span{min-width:0;overflow-wrap:anywhere}
+.update-buttons{flex-wrap:wrap}
+@media(max-width:700px){.update-banner{align-items:flex-start;flex-wrap:wrap}.update-version-line{flex-wrap:wrap}}

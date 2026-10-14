@@ -1,6 +1,6 @@
 {
   "name": "weeklight",
-  "version": "1.1.12",
+  "version": "1.2.0",
   "description": "橙子日程 · Windows 桌面日历与待办清单",
   "main": "src/main.cjs",
   "author": "OrangeCatzhang",
@@ -27,13 +27,14 @@
     "test:weekdays": "node tests/weekday-desktop.cjs",
     "test:series": "node tests/task-series-desktop.cjs",
     "test:updates": "node tests/update-desktop.cjs",
-    "test:branding": "node tests/window-branding-desktop.cjs"
+    "test:branding": "node tests/window-branding-desktop.cjs",
+    "test:language": "node tests/language-desktop.cjs && node tests/language-backend.cjs"
   },
   "build": {
     "appId": "local.weeklight.planner",
     "productName": "橙子日程",
     "directories": {
-      "output": "outputs/weeklight-1.1.12"
+      "output": "outputs/weeklight-1.2.0"
     },
     "files": [
       "src/**/*",
@@ -48,6 +49,12 @@
     },
     "nsis": {
       "oneClick": false,
+      "installerLanguages": [
+        "en_US",
+        "zh_CN"
+      ],
+      "displayLanguageSelector": true,
+      "include": "scripts/installer.nsh",
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,

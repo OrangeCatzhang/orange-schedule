@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:"><title>橙子日程 · 提醒</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="task-actions.css"></head>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:"><title data-i18n="橙子日程 · 提醒">橙子日程 · 提醒</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="task-actions.css"></head>
 <body class="reminder-window">
-<header class="reminder-heading"><span>日程提醒</span><span id="quote-count"></span></header>
-<section class="reminder-quote" aria-label="名言与诗句"><h1 id="quote-text">学而时习之，不亦说乎？</h1><div class="reminder-quote-bottom"><cite id="quote-source"></cite><button class="text-button" id="quote-next" aria-label="换一句名句">换一句 ↻</button></div></section>
+<header class="reminder-heading"><span data-i18n="日程提醒">日程提醒</span><span id="quote-count"></span></header>
+<section class="reminder-quote" aria-label="名言与诗句" data-i18n-aria-label="名言与诗句"><h1 id="quote-text"></h1><div class="reminder-quote-bottom"><div><cite id="quote-source"></cite><p id="quote-translation-note" data-i18n="英文译文说明" hidden style="font-size:10px;line-height:1.4;color:var(--muted);margin:4px 0 0">English rendering of the Chinese original</p></div><button class="text-button" id="quote-next" aria-label="换一句名句" data-i18n-aria-label="换一句名句" data-i18n="换一句 ↻">换一句 ↻</button></div></section>
 <p class="error-message" id="reminder-error" role="alert"></p>
-<div id="reminders" class="reminder-list" aria-label="待处理提醒"></div>
-<footer class="reminder-footer"><button class="text-button" id="open-main">打开计划日历 ↗</button></footer>
-<script src="task-actions.js"></script><script src="reminder.js"></script></body></html>
+<div id="reminders" class="reminder-list" aria-label="待处理提醒" data-i18n-aria-label="待处理提醒"></div>
+<footer class="reminder-footer"><button class="text-button" id="open-main" data-i18n="打开计划日历 ↗">打开计划日历 ↗</button></footer>
+<script src="i18n.js"></script><script src="locale-core.js"></script><script src="locale-aux.js"></script><script src="task-actions.js"></script><script src="reminder.js"></script></body></html>

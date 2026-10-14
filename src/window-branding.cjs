@@ -39,13 +39,13 @@ function createWindowBranding({
 
   return {
     iconPath,
-    apply(window) {
+    apply(window, displayName = APP_NAME) {
       if (!windows) return;
       // Write relaunch properties first, then the AppUserModelID that tells
       // Windows Shell to refresh the window's taskbar identity. Electron writes
       // appId first when both are supplied in one call, so keep these separate.
       // Call apply() before showing the window for the first time.
-      window.setAppDetails({ ...details });
+      window.setAppDetails({ ...details, relaunchDisplayName: displayName });
       window.setAppDetails({ appId });
       window.setIcon(iconPath);
     }

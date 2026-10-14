@@ -257,3 +257,39 @@ dialog::backdrop{background:#292a3033;backdrop-filter:blur(3px)}
 .reminder-list .reminder-row h3{overflow-wrap:anywhere}
 .reminder-footer{flex-shrink:0;padding-top:12px;border-top:1px solid var(--line);margin-top:8px}
 #reminder-error:empty{display:none}
+
+/* Language labels can expand without changing task fields or fixed calendar columns. */
+.brand .brand-name{font-size:inherit;font-weight:inherit;letter-spacing:inherit;color:inherit;line-height:inherit;margin:0}
+.version{flex-wrap:wrap;justify-content:flex-start;gap:0 4px}
+.version>span:last-child{margin-left:auto}
+.setting-line>div{min-width:0}
+.language-setting select{max-width:45%;flex-shrink:0;padding:8px 10px;border:1px solid #e1e4e7;border-radius:8px;background:#fbfbfc;color:var(--ink)}
+html[lang="en"] .brand{font-size:17px;letter-spacing:-.3px;padding-left:3px;padding-right:0;gap:7px}
+html[lang="en"] .brand img{width:32px;height:32px}
+html[lang="en"] .brand>div{white-space:normal;min-width:0}
+html[lang="en"] .brand>div>span:not(.brand-name){font-size:9px;letter-spacing:0;line-height:1.4}
+html[lang="en"] .nav-item{gap:8px;font-size:13px;padding-left:9px;padding-right:9px}
+html[lang="en"] .category-button{font-size:12px;gap:7px;padding-left:9px;padding-right:9px;white-space:normal;text-align:left}
+html[lang="en"] .new-button{gap:6px;font-size:13px;padding-left:12px;padding-right:12px}
+html[lang="en"] .local-status{font-size:10px;margin-left:9px;margin-right:0}
+html[lang="en"] .version>span:last-child{width:100%;margin:2px 0 0}
+html[lang="en"] .calendar-toolbar{flex-wrap:wrap}
+html[lang="en"] .date-navigation{flex-wrap:wrap;min-width:0}
+html[lang="en"] .date-navigation h2{white-space:normal}
+html[lang="en"] .view-options{flex-wrap:wrap}
+html[lang="en"] .view-count{margin-left:auto}
+html[lang="en"] .panel-add{white-space:normal}
+html[lang="en"] .field select{font-size:12px;padding-left:8px;padding-right:5px;min-width:0}
+html[lang="en"] .field{min-width:0}
+html[lang="en"] .form-hint,html[lang="en"] .notice{line-height:1.6}
+@media(max-width:1150px){
+ html[lang="en"] .sidebar{width:192px}
+ html[lang="en"] .page-header{align-items:flex-start}
+ html[lang="en"] .page-header>div:first-child{min-width:0}
+ html[lang="en"] .header-actions{flex-shrink:0}
+ html[lang="en"] .page-header p{max-width:360px}
+ html[lang="en"] .stat-copy>span{font-size:11px}
+ html[lang="en"] .stat-number small{font-size:10px}
+}
+
+html[lang="en"] .reminder-quote h1{font-size:18px;line-height:1.45}

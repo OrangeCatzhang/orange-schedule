@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const api = window.weeklight;
+  const i18n = window.WeeklightI18n, tr = (key, values) => i18n.t(key, values);
   const verbs = { complete: '完成', reopen: '恢复为待办', delete: '删除' };
   let active = false;
   const errorText = error => String(error?.message || error).replace(/^Error invoking remote method '[^']+': Error: /, '');
@@ -23,36 +24,43 @@
         '<div class="task-action-task"><strong id="task-action-task-title"></strong><span id="task-action-task-date"></span></div>' +
         '<p id="task-action-description"></p>' +
         '<p id="task-action-legacy-warning" class="task-action-warning" hidden></p>' +
-        '<fieldset id="task-action-scope"><legend>处理范围</legend>' +
-        '<label class="task-action-option"><input type="radio" name="task-action-scope" value="single" checked><span>仅此项</span><small>1 项</small></label>' +
-        '<label class="task-action-option"><input type="radio" name="task-action-scope" value="following"><span>此项及后续</span><small id="task-action-following-count"></small></label>' +
+        '<fieldset id="task-action-scope"><legend data-i18n="处理范围">处理范围</legend>' +
+        '<label class="task-action-option"><input type="radio" name="task-action-scope" value="single" checked><span data-i18n="仅此项">仅此项</span><small data-i18n="1 项">1 项</small></label>' +
+        '<label class="task-action-option"><input type="radio" name="task-action-scope" value="following"><span data-i18n="此项及后续">此项及后续</span><small id="task-action-following-count"></small></label>' +
         '</fieldset>' +
         '<details id="task-action-preview"><summary id="task-action-preview-label"></summary><ol id="task-action-items"></ol></details>' +
         '<p id="task-action-impact" aria-live="polite"></p>' +
         '<p id="task-action-error" role="alert" tabindex="-1"></p>' +
         '</div>' +
-        '<div class="task-action-footer"><button type="button" id="task-action-cancel">取消</button><button type="submit" id="task-action-confirm"></button></div>' +
+        '<div class="task-action-footer"><button type="button" id="task-action-cancel" data-i18n="取消">取消</button><button type="submit" id="task-action-confirm"></button></div>' +
         '</form>';
       const get = selector => dialog.querySelector(selector);
       const form = get('form'), confirm = get('#task-action-confirm'), cancel = get('#task-action-cancel');
       const inputs = [...dialog.querySelectorAll('input[name="task-action-scope"]')];
-      let saving = false, settled = false;
-      get('#task-action-title').textContent = verbs[action] + (action === 'reopen' ? '？' : '计划？');
+      let saving = false, settled = false, saveError = '';
       get('#task-action-task-title').textContent = preview.task.title;
       get('#task-action-task-date').textContent = preview.task.date + ' · ' + preview.task.time;
-      get('#task-action-description').textContent = following
-        ? preview.source === 'series'
-          ? '按重复顺序处理，改期事项仍保留原顺序。下方清单显示实际日期。'
-          : '后续范围按当前日期和时间排列。请选择本次要处理的范围。'
-        : action === 'delete' ? '删除后，这项计划及其提醒记录将被移除。' : '本次仅处理这项计划。';
       get('#task-action-scope').hidden = !following;
-      get('#task-action-following-count').textContent = preview.followingCount + ' 项';
       get('#task-action-preview').hidden = !following;
       get('#task-action-preview').open = legacy;
-      get('#task-action-preview-label').textContent = '核对此项及后续（' + preview.followingCount + ' 项）';
-      if (legacy) {
-        get('#task-action-legacy-warning').hidden = false;
-        get('#task-action-legacy-warning').textContent = '旧版未保存分组，以下为同次创建且内容匹配的候选，请核对后批量处理。';
+      get('#task-action-legacy-warning').hidden = !legacy;
+      const itemLabels = [];
+      function translateDialog() {
+        i18n.apply(dialog);
+        get('#task-action-title').textContent = tr(verbs[action] + (action === 'reopen' ? '？' : '计划？'));
+        get('#task-action-description').textContent = tr(following
+          ? preview.source === 'series'
+            ? '按重复顺序处理，改期事项仍保留原顺序。下方清单显示实际日期。'
+            : '后续范围按当前日期和时间排列。请选择本次要处理的范围。'
+          : action === 'delete' ? '删除后，这项计划及其提醒记录将被移除。' : '本次仅处理这项计划。');
+        get('#task-action-following-count').textContent = tr('{count} 项', { count: preview.followingCount });
+        get('#task-action-preview-label').textContent = tr('核对此项及后续（{count} 项）', { count: preview.followingCount });
+        get('#task-action-legacy-warning').textContent = tr('旧版未保存分组，以下为同次创建且内容匹配的候选，请核对后批量处理。');
+        for (const { item, meta } of itemLabels) {
+          meta.textContent = item.date + ' · ' + item.time + ' · ' + tr(item.done ? '已完成' : '待办') + (item.id === preview.task.id ? ' · ' + tr('当前项') : '');
+        }
+        get('#task-action-error').textContent = saveError ? tr('操作未保存：{error}', { error: i18n.translateError(saveError) }) : '';
+        updateImpact();
       }
       const fragment = document.createDocumentFragment();
       for (const item of preview.items || []) {
@@ -60,7 +68,7 @@
         li.dataset.taskId = item.id;
         const title = document.createElement('strong'), meta = document.createElement('span');
         title.textContent = item.title;
-        meta.textContent = item.date + ' · ' + item.time + ' · ' + (item.done ? '已完成' : '待办') + (item.id === preview.task.id ? ' · 当前项' : '');
+        itemLabels.push({ item, meta });
         li.append(title, meta);
         fragment.append(li);
       }
@@ -68,8 +76,8 @@
       function scope() { return following && inputs[1].checked ? 'following' : 'single'; }
       function updateImpact() {
         const multiple = scope() === 'following', count = multiple ? preview.followingCount : 1;
-        get('#task-action-impact').textContent = '将' + verbs[action] + ' ' + count + ' 项' + (legacy && multiple ? '候选计划。' : '计划。');
-        confirm.textContent = saving ? '正在保存…' : '确定' + verbs[action] + (multiple ? '（' + count + ' 项）' : '');
+        get('#task-action-impact').textContent = tr('将' + verbs[action] + (count === 1 ? ' 1 项' : ' {count} 项') + (legacy && multiple ? '候选计划。' : '计划。'), { count });
+        confirm.textContent = saving ? tr('正在保存…') : tr('确定' + verbs[action] + (multiple ? '（{count} 项）' : ''), { count });
       }
       function setSaving(value) {
         saving = value;
@@ -81,6 +89,7 @@
       function finish(value) {
         if (settled) return;
         settled = true;
+        window.removeEventListener('weeklight-language-changed', translateDialog);
         if (dialog.open) dialog.close();
         dialog.remove();
         if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
@@ -97,6 +106,7 @@
         event.preventDefault();
         if (saving) return;
         const selectedScope = scope();
+        saveError = '';
         get('#task-action-error').textContent = '';
         setSaving(true);
         try {
@@ -104,11 +114,13 @@
           finish(result);
         } catch (error) {
           setSaving(false);
-          get('#task-action-error').textContent = '操作未保存：' + errorText(error);
+          saveError = errorText(error);
+          get('#task-action-error').textContent = tr('操作未保存：{error}', { error: i18n.translateError(saveError) });
           get('#task-action-error').focus({ preventScroll: false });
         }
       };
-      updateImpact();
+      translateDialog();
+      window.addEventListener('weeklight-language-changed', translateDialog);
       document.body.append(dialog);
       dialog.showModal();
       if (following) inputs[0].focus({ preventScroll: true });
@@ -117,12 +129,12 @@
   }
 
   async function act(id, action) {
-    if (!Object.hasOwn(verbs, action)) throw new Error('操作无效');
+    if (!Object.hasOwn(verbs, action)) throw new Error(tr('操作无效'));
     if (active) return null;
     active = true;
     try {
       const preview = await api.previewTaskAction(id, action);
-      if (!preview?.task) throw new Error('计划不存在，请刷新后重试');
+      if (!preview?.task) throw new Error(tr('计划不存在，请刷新后重试'));
       if (action !== 'delete' && preview.followingCount <= 1) {
         return await api.applyTaskAction({ id: preview.task.id, action, scope: 'single', token: preview.singleToken });
       }

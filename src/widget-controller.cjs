@@ -2,7 +2,10 @@ const {app,BrowserWindow,screen}=require('electron');
 const {createWindowBranding}=require('./window-branding.cjs');
 const {sendToBottom}=require('./window-layer.cjs');
 const path=require('node:path');const {normalizePrefs}=require('./widget-model.cjs');
+const i18n=require('./i18n.js');i18n.register(require('./locale-core.js'));
 function createWidgetController({getState,change,isQuitting}){
+ const t=(key,values)=>i18n.t(key,values,getState().settings.language);
+ const errorText=error=>i18n.translateError(error,getState().settings.language);
  const windowBranding=createWindowBranding({app});
  let window=null,timer,layerUpdate=Promise.resolve();
  const preferences=()=>normalizePrefs(getState().settings.widget);
@@ -16,7 +19,7 @@ function createWidgetController({getState,change,isQuitting}){
   });
   return layerUpdate;
  }
- function settleLayer(){updateLayer().catch(e=>{if(window&&!window.isDestroyed())window.webContents.send('app-error','便签层级设置失败：'+e.message);});}
+ function settleLayer(){updateLayer().catch(e=>{if(window&&!window.isDestroyed())window.webContents.send('app-error',t('便签层级设置失败：{error}',{error:errorText(e)}));});}
  function bounds(){
   const saved=preferences().bounds,primary=screen.getPrimaryDisplay().workArea;
   let r=saved||{width:410,height:650,x:primary.x+primary.width-438,y:primary.y+44};
@@ -25,12 +28,12 @@ function createWidgetController({getState,change,isQuitting}){
   return {width,height,x:Math.round(Math.min(Math.max(r.x,a.x),a.x+a.width-width)),y:Math.round(Math.min(Math.max(r.y,a.y),a.y+a.height-height))};
  }
  function saveBounds(){clearTimeout(timer);if(!window||window.isDestroyed())return;const b=window.getBounds();if(JSON.stringify(preferences().bounds)!==JSON.stringify(b))change(s=>{s.settings.widget=normalizePrefs({...s.settings.widget,bounds:b});});}
- function debounce(){clearTimeout(timer);timer=setTimeout(()=>{try{saveBounds();}catch(e){window?.webContents.send('app-error','便签位置未保存：'+e.message);}},400);}
+ function debounce(){clearTimeout(timer);timer=setTimeout(()=>{try{saveBounds();}catch(e){window?.webContents.send('app-error',t('便签位置未保存：{error}',{error:errorText(e)}));}},400);}
  function open(){
   if(!preferences().enabled)change(s=>{s.settings.widget=normalizePrefs({...s.settings.widget,enabled:true});});
   if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.showInactive();settleLayer();return;}
-  window=new BrowserWindow({...bounds(),minWidth:340,minHeight:380,maxWidth:680,maxHeight:1000,frame:false,transparent:true,backgroundColor:'#00000000',resizable:true,maximizable:false,fullscreenable:false,skipTaskbar:true,alwaysOnTop:preferences().onTop,hasShadow:true,show:false,title:'橙子日程 · 桌面便签',icon:windowBranding.iconPath,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
-  windowBranding.apply(window);
+  window=new BrowserWindow({...bounds(),minWidth:340,minHeight:380,maxWidth:680,maxHeight:1000,frame:false,transparent:true,backgroundColor:'#00000000',resizable:true,maximizable:false,fullscreenable:false,skipTaskbar:true,alwaysOnTop:preferences().onTop,hasShadow:true,show:false,title:t('橙子日程 · 桌面便签'),icon:windowBranding.iconPath,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
+  windowBranding.apply(window,t('橙子日程'));
   window.loadFile(path.join(__dirname,'widget.html'));window.once('ready-to-show',()=>{window?.showInactive();settleLayer();});
   window.on('blur',()=>{if(!preferences().onTop)settleLayer();});
   window.on('move',debounce);window.on('resize',debounce);
