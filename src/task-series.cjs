@@ -1,4 +1,5 @@
 const crypto=require('node:crypto');
+const {spanDays}=require('./task-dates.js');
 const ACTIONS=new Set(['complete','reopen','delete']);
 const validId=id=>typeof id==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(id);
 function validateSeriesTasks(tasks){
@@ -22,7 +23,7 @@ function previewTaskAction(tasks,id,action){
   source='series';
   matches=tasks.filter(t=>t.seriesId===task.seriesId&&t.seriesIndex>=task.seriesIndex).sort((a,b)=>a.seriesIndex-b.seriesIndex);
  }else if(Number.isFinite(task.createdAt)&&task.createdAt>0){
-  const candidates=tasks.filter(t=>t.seriesId===undefined&&t.seriesIndex===undefined&&t.createdAt===task.createdAt&&legacyFields.every(field=>t[field]===task[field]));
+  const candidates=tasks.filter(t=>t.seriesId===undefined&&t.seriesIndex===undefined&&t.createdAt===task.createdAt&&legacyFields.every(field=>t[field]===task[field])&&spanDays(t)===spanDays(task));
   if(candidates.length>1){
    source='legacy';
    matches=candidates.filter(t=>schedule(t)>=schedule(task)).sort((a,b)=>schedule(a).localeCompare(schedule(b))||a.id.localeCompare(b.id));
@@ -30,7 +31,7 @@ function previewTaskAction(tasks,id,action){
  }
  const token=crypto.createHash('sha256').update(JSON.stringify({id,action,source,tasks:matches})).digest('hex');
  const singleToken=crypto.createHash('sha256').update(JSON.stringify({id,action,task})).digest('hex');
- const display=t=>({id:t.id,title:t.title,date:t.date,time:t.time,done:t.done});
+ const display=t=>({id:t.id,title:t.title,date:t.date,...(t.endDate?{endDate:t.endDate}:{}),time:t.time,done:t.done});
  return {task:display(task),source,followingCount:matches.length,items:matches.map(display),token,singleToken};
 }
 function applyTaskAction(state,request){

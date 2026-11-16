@@ -6,6 +6,8 @@
   '橙子日程': 'Orange Schedule',
   '橙子日程 · 桌面便签': 'Orange Schedule · Desktop note',
   '橙子日程 · 提醒': 'Orange Schedule · Reminder',
+  '共 {count} 天': '{count} days total',
+  '已过结束日期': 'Past end date',
   '桌面便签': 'Desktop widget',
   '置顶便签': 'Keep note on top',
   '取消置顶，回到桌面底层': 'Unpin and keep behind other windows',

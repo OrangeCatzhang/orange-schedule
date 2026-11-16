@@ -181,6 +181,25 @@ test('legacy candidate previews require exact creation evidence and never establ
   assert.equal(last.followingCount, 1);
 });
 
+test('legacy matching distinguishes span lengths and previews include the full task range', () => {
+  const tasks=[
+    task('span-a','2030-06-10',{endDate:'2030-06-12'}),
+    task('span-b','2030-06-17',{endDate:'2030-06-19'}),
+    task('longer','2030-06-24',{endDate:'2030-06-27'}),
+    task('single','2030-06-24')
+  ];
+  const preview=previewTaskAction(tasks,'span-a','delete');
+  assert.equal(preview.source,'legacy');
+  assert.deepEqual(ids(preview.items),['span-a','span-b']);
+  assert.equal(preview.task.endDate,'2030-06-12');
+  assert.equal(preview.items[1].endDate,'2030-06-19');
+  const state=stateOf(tasks);
+  applyTaskAction(state,{id:'span-a',action:'complete',scope:'single'});
+  assert.equal(state.tasks[0].done,true);
+  assert.equal(state.tasks[0].endDate,'2030-06-12');
+  assert.ok(state.tasks.slice(1).every(t=>!t.done));
+});
+
 test('legacy following requires confirmation, acts only on the confirmed suffix and leaves metadata absent', () => {
   const candidates = legacy();
   const unrelated = task('unrelated', '2030-06-14', { createdAt: stamp + 1 });

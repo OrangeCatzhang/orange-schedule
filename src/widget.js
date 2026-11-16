@@ -1,4 +1,4 @@
-const api=window.weeklight,model=window.WeeklightWidget,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const api=window.weeklight,model=window.WeeklightWidget,dates=window.WeeklightDates,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const i18n=window.WeeklightI18n,tr=(key,values)=>i18n.t(key,values);
 const cats={work:{name:'工作',color:'#77a58b'},study:{name:'学习',color:'#ab94be'},life:{name:'生活',color:'#c4a776'}};
@@ -9,13 +9,15 @@ const errorText=e=>String(e?.message||e).replace(/^Error invoking remote method 
 function toast(msg){toastKey=msg;$('#widget-toast').textContent=tr(msg);$('#widget-toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#widget-toast').classList.remove('visible'),2400);}
 async function run(fn){try{return await fn();}catch(e){toast(errorText(e));return null;}}
 function row(t){
- const overdue=!t.done&&new Date(t.date+'T'+t.time+':00')<new Date();const c=cats[t.category];
- return '<div class="widget-task '+(t.done?'done':'')+'"><button class="check-task" data-toggle="'+esc(t.id)+'" aria-label="'+esc(tr(t.done?'撤销完成 {title}':'完成 {title}',{title:t.title}))+'" aria-pressed="'+t.done+'">'+(t.done?'✓':'')+'</button><button class="task-text" data-edit="'+esc(t.id)+'" title="'+esc(tr('编辑计划'))+'"><span class="task-title">'+esc(t.title)+(t.priority==='high'?'<span class="priority">◆</span>':'')+'</span><span class="task-meta"><span>'+t.time+'</span><i style="--category:'+c.color+'"></i><span>'+esc(tr(c.name))+'</span>'+(overdue?'<span class="late">'+esc(tr('已过计划时间'))+'</span>':'')+'</span></button></div>';
+ const overdue=model.isPastPlanTime(t),count=dates.spanDays(t),spans=count>1,c=cats[t.category];
+ const dateText=d=>i18n.formatDate(parse(d),{...(t.date.slice(0,4)!==dates.taskEndDate(t).slice(0,4)?{year:'numeric'}:{}),month:'short',day:'numeric'});
+ const spanLabel=spans?dateText(t.date)+' — '+dateText(dates.taskEndDate(t))+' · '+tr('共 {count} 天',{count}):'';
+ return '<div class="widget-task '+(t.done?'done':'')+'"><button class="check-task" data-toggle="'+esc(t.id)+'" aria-label="'+esc(tr(t.done?'撤销完成 {title}':'完成 {title}',{title:t.title}))+'" aria-pressed="'+t.done+'">'+(t.done?'✓':'')+'</button><button class="task-text" data-edit="'+esc(t.id)+'" title="'+esc(tr('编辑计划'))+'"><span class="task-title">'+esc(t.title)+(t.priority==='high'?'<span class="priority">◆</span>':'')+'</span>'+(spans?'<span class="task-span">'+esc(spanLabel)+'</span>':'')+'<span class="task-meta"><span>'+t.time+'</span><i style="--category:'+c.color+'"></i><span>'+esc(tr(c.name))+'</span>'+(overdue?'<span class="late">'+esc(tr(spans?'已过结束日期':'已过计划时间'))+'</span>':'')+'</span></button></div>';
 }
 function renderList(ts,isDone=false){
  if(!ts.length)return '<div class="empty-message">'+(isDone?esc(tr('完成的事项会留在这里')):'<strong>'+esc(tr('留一点空间，安排下一步'))+'</strong>'+esc(tr('添加计划，或切换日期查看')))+'</div>';
  if(prefs.mode==='day')return ts.map(row).join('');
- return [...new Set(ts.map(t=>t.date))].map(d=>'<div class="day-group">'+fmt(d)+' · '+weekday(d)+(d===today()?' · '+tr('今天'):'')+'</div>'+ts.filter(t=>t.date===d).map(row).join('')).join('');
+ return model.groupTasks(ts,prefs).map(({date:d,tasks})=>'<div class="day-group">'+fmt(d)+' · '+weekday(d)+(d===today()?' · '+tr('今天'):'')+'</div>'+tasks.map(row).join('')).join('');
 }
 function syncQuickDate(d){if(lastDate!==d){const f=$('#quick-form');f.elements.date.value=d;if(!lastDate){const now=new Date();now.setMinutes(Math.ceil((now.getMinutes()+1)/15)*15,0,0);f.elements.time.value=d===model.dateKey(now)?String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'):'09:00';}lastDate=d;}}
 function render(){

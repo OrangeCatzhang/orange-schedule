@@ -39,7 +39,7 @@
       const inputs = [...dialog.querySelectorAll('input[name="task-action-scope"]')];
       let saving = false, settled = false, saveError = '';
       get('#task-action-task-title').textContent = preview.task.title;
-      get('#task-action-task-date').textContent = preview.task.date + ' · ' + preview.task.time;
+      get('#task-action-task-date').textContent = preview.task.date + (preview.task.endDate ? ' — ' + preview.task.endDate : '') + ' · ' + preview.task.time;
       get('#task-action-scope').hidden = !following;
       get('#task-action-preview').hidden = !following;
       get('#task-action-preview').open = legacy;
@@ -57,7 +57,7 @@
         get('#task-action-preview-label').textContent = tr('核对此项及后续（{count} 项）', { count: preview.followingCount });
         get('#task-action-legacy-warning').textContent = tr('旧版未保存分组，以下为同次创建且内容匹配的候选，请核对后批量处理。');
         for (const { item, meta } of itemLabels) {
-          meta.textContent = item.date + ' · ' + item.time + ' · ' + tr(item.done ? '已完成' : '待办') + (item.id === preview.task.id ? ' · ' + tr('当前项') : '');
+          meta.textContent = item.date + (item.endDate ? ' — ' + item.endDate : '') + ' · ' + item.time + ' · ' + tr(item.done ? '已完成' : '待办') + (item.id === preview.task.id ? ' · ' + tr('当前项') : '');
         }
         get('#task-action-error').textContent = saveError ? tr('操作未保存：{error}', { error: i18n.translateError(saveError) }) : '';
         updateImpact();

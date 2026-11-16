@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { dateKey, normalizePrefs, getRange, selectTasks } = require('../src/widget-model.cjs');
+const { dateKey, normalizePrefs, getRange, selectTasks, groupTasks, isPastPlanTime } = require('../src/widget-model.cjs');
 const { validateState } = require('../src/core.cjs');
 
 const defaults = {
@@ -127,4 +127,61 @@ test('hiding completed rows retains completed counts in the shared task model', 
   const result = selectTasks(tasks, { anchor: '2026-09-28', showCompleted: false });
   assert.deepEqual(ids(result.tasks), ['done', 'pending']);
   assert.deepEqual(ids(result.done), ['done']);
+});
+
+test('one multi-day task appears on each covered day, including its final day', () => {
+  const task = makeTask('report', '2026-11-16', { endDate: '2026-11-30' });
+  for (const anchor of ['2026-11-16', '2026-11-22', '2026-11-30']) {
+    const selected = selectTasks([task], { mode: 'day', anchor });
+    assert.deepEqual(ids(selected.pending), ['report']);
+    assert.equal(selected.tasks[0], task);
+  }
+  for (const anchor of ['2026-11-15', '2026-12-01']) {
+    assert.deepEqual(selectTasks([task], { mode: 'day', anchor }).tasks, []);
+  }
+});
+
+test('weekly widget includes overlapping projects once and groups carry-ins inside the selected week', () => {
+  const tasks = [
+    makeTask('report', '2026-11-16', { endDate: '2026-11-30' }),
+    makeTask('finish-on-monday', '2026-11-20', { endDate: '2026-11-23', done: true }),
+    makeTask('previous', '2026-11-19', { endDate: '2026-11-22' }),
+    makeTask('new', '2026-11-25'),
+    makeTask('next', '2026-11-30')
+  ];
+  const before = structuredClone(tasks);
+  const prefs = { mode: 'week', anchor: '2026-11-26' };
+  const result = selectTasks(tasks, prefs);
+  assert.deepEqual(ids(result.tasks), ['finish-on-monday', 'new', 'report']);
+  assert.equal(result.tasks.length, 3, 'a project is counted once, not once for each day');
+  assert.equal(result.done.length, 1);
+  assert.deepEqual(groupTasks(result.tasks, prefs).map(g => [g.date, ids(g.tasks)]), [
+    ['2026-11-23', ['finish-on-monday', 'report']], ['2026-11-25', ['new']]
+  ]);
+  assert.deepEqual(tasks, before, 'visible-week grouping never changes the saved start date');
+});
+
+test('overlapping tasks retain category and completion filters over a year boundary', () => {
+  const tasks = [
+    makeTask('report', '2026-12-20', { endDate: '2027-01-02' }),
+    makeTask('study', '2026-12-31', { endDate: '2027-01-03', category: 'study' })
+  ];
+  const prefs = { mode: 'day', anchor: '2027-01-01', category: 'work' };
+  assert.deepEqual(ids(selectTasks(tasks, prefs).pending), ['report']);
+  tasks[0].done = true;
+  const completed = selectTasks(tasks, prefs);
+  assert.deepEqual(completed.pending, []);
+  assert.deepEqual(ids(completed.done), ['report']);
+  assert.deepEqual(ids(selectTasks(tasks, { ...prefs, anchor: '2027-01-02' }).done), ['report']);
+});
+
+test('spanning tasks become late after their final calendar day, not after their initial start time', () => {
+  const task = makeTask('report', '2026-11-16', { endDate: '2026-11-30' });
+  assert.equal(isPastPlanTime(task, new Date('2026-11-16T10:00:00')), false);
+  assert.equal(isPastPlanTime(task, new Date('2026-11-30T23:59:59')), false);
+  assert.equal(isPastPlanTime(task, new Date('2026-12-01T00:00:00')), true);
+  assert.equal(isPastPlanTime({ ...task, done: true }, new Date('2026-12-01T00:00:00')), false);
+  const single = makeTask('meeting', '2026-11-16');
+  assert.equal(isPastPlanTime(single, new Date('2026-11-16T08:59:59')), false);
+  assert.equal(isPastPlanTime(single, new Date('2026-11-16T09:00:01')), true);
 });

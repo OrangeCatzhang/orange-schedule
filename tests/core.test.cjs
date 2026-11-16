@@ -1,6 +1,60 @@
 const test=require('node:test');const assert=require('node:assert/strict');
 const {cleanTask,dueTasks,makeSeries,validateState,dateKey}=require('../src/core.cjs');
 const draft={title:'阶段复盘',date:'2026-09-28',time:'10:00',duration:60,category:'work',reminder:10};
+test('multi-day task stays one identity with one start reminder and survives backup',()=>{
+  const task=cleanTask({...draft,date:'2026-11-16',endDate:'2026-11-30'});
+  const tasks=makeSeries(task);
+  assert.equal(tasks.length,1);
+  assert.equal(tasks[0].id,task.id);
+  assert.equal(tasks[0].endDate,'2026-11-30');
+  assert.equal(tasks[0].seriesId,undefined);
+  const threshold=new Date('2026-11-16T09:50:00').getTime();
+  assert.deepEqual(dueTasks(tasks,threshold-1),[]);
+  assert.deepEqual(dueTasks(tasks,threshold).map(t=>t.id),[task.id]);
+  tasks[0].notifiedAt=threshold;
+  const restored=validateState(JSON.parse(JSON.stringify({version:1,tasks})));
+  assert.equal(restored.tasks[0].endDate,'2026-11-30');
+  assert.deepEqual(dueTasks(restored.tasks,new Date('2026-11-30T12:00:00').getTime()),[]);
+  const extended=cleanTask({...restored.tasks[0],endDate:'2026-12-10'},restored.tasks[0]);
+  assert.equal(extended.notifiedAt,threshold,'Changing only the end does not rearm the start reminder');
+});
+
+test('multi-day edits preserve omitted spans, shift with start and allow explicit single-day conversion',()=>{
+  const original=Object.freeze({...cleanTask({...draft,date:'2026-11-16',endDate:'2026-11-30'}),notifiedAt:123});
+  const {endDate,...withoutEnd}=original;
+  const edited=cleanTask({...withoutEnd,notes:'new note'},original);
+  assert.equal(edited.endDate,endDate);
+  assert.equal(edited.notifiedAt,123);
+  const moved=cleanTask({...withoutEnd,date:'2026-12-25'},original);
+  assert.equal(moved.endDate,'2027-01-08');
+  assert.equal(moved.notifiedAt,undefined);
+  const single=cleanTask({...original,endDate:original.date},original);
+  assert.equal(Object.hasOwn(single,'endDate'),false);
+  assert.equal(Object.hasOwn(cleanTask(draft),'endDate'),false);
+});
+
+test('invalid or reversed task ends reject both direct saves and backup imports',()=>{
+  const base=cleanTask({...draft,date:'2026-11-16'});
+  for(const endDate of [null,'',false,123,'not-a-date','2026-2-30','2027-02-29','2026-11-15','10000-01-01']){
+    assert.throws(()=>cleanTask({...base,endDate}));
+    assert.throws(()=>validateState({version:1,tasks:[{...base,endDate}]}));
+  }
+});
+
+test('recurring multi-day tasks move their full inclusive ranges for each occurrence',()=>{
+  const original=Object.freeze(cleanTask({...draft,date:'2026-12-28',endDate:'2027-01-02'}));
+  const weekly=makeSeries(original,4);
+  assert.deepEqual(weekly.map(t=>[t.date,t.endDate]),[
+    ['2026-12-28','2027-01-02'],['2027-01-04','2027-01-09'],
+    ['2027-01-11','2027-01-16'],['2027-01-18','2027-01-23']
+  ]);
+  const daily=makeSeries(original,{frequency:'daily',until:'2026-12-30'});
+  assert.deepEqual(daily.map(t=>t.endDate),['2027-01-02','2027-01-03','2027-01-04']);
+  const weekdays=makeSeries(cleanTask({...draft,date:'2026-11-14',endDate:'2026-11-16'}),{frequency:'weekdays',until:'2026-11-17'});
+  assert.deepEqual(weekdays.map(t=>[t.date,t.endDate]),[['2026-11-16','2026-11-18'],['2026-11-17','2026-11-19']]);
+  assert.equal(original.endDate,'2027-01-02');
+  assert.throws(()=>makeSeries(cleanTask({...draft,date:'9999-12-20',endDate:'9999-12-31'}),4));
+});
 test('reject invalid dates, times and reminders',()=>{assert.throws(()=>cleanTask({...draft,date:'2026-02-30'}));assert.throws(()=>cleanTask({...draft,time:'24:00'}));assert.throws(()=>cleanTask({...draft,reminder:2}));assert.throws(()=>cleanTask({...draft,title:' '}));});
 test('weekly repetitions preserve local dates across months and year',()=>{const tasks=makeSeries(cleanTask({...draft,date:'2026-12-28'}),4);assert.deepEqual(tasks.map(t=>t.date),['2026-12-28','2027-01-04','2027-01-11','2027-01-18']);assert.equal(new Set(tasks.map(t=>t.id)).size,4);});
 test('remind exactly at threshold, then suppress across restart',()=>{const t=cleanTask(draft);const threshold=new Date('2026-09-28T09:50:00').getTime();assert.equal(dueTasks([t],threshold-1).length,0);assert.equal(dueTasks([t],threshold).length,1);t.notifiedAt=threshold;const restored=validateState({version:1,tasks:[t]});assert.equal(dueTasks(restored.tasks,threshold+1000000).length,0);});

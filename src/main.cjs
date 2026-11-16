@@ -1,6 +1,7 @@
 const {app,BrowserWindow,ipcMain,Tray,Menu,nativeImage,Notification,dialog,shell,powerMonitor,net}=require('electron');
 const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');
 const {cleanTask,dueTasks,makeSeries,validateState,at}=require('./core.cjs');
+const {shiftTaskDates}=require('./task-dates.js');
 const {validateSeriesTasks,previewTaskAction,applyTaskAction}=require('./task-series.cjs');
 const {createWidgetController}=require('./widget-controller.cjs');
 const {normalizePrefs}=require('./widget-model.cjs');
@@ -104,7 +105,7 @@ app.whenReady().then(()=>{
  handle('apply-task-action',request=>change(s=>applyTaskAction(s,request)));
  handle('toggle-task',id=>change(s=>{const t=s.tasks.find(x=>x.id===id);if(!t)throw new Error('计划不存在');t.done=!t.done;if(t.done){t.snoozeUntil=null;s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});}}));
  handle('delete-task',id=>change(s=>{s.tasks=s.tasks.filter(t=>t.id!==id);s.history=s.history.filter(h=>h.taskId!==id);}));
- handle('move-task',(id,date,time)=>{const old=state.tasks.find(x=>x.id===id);if(!old)throw new Error('计划不存在');const t=cleanTask({...old,date,time:time||old.time},old);return change(s=>{s.tasks=s.tasks.map(x=>x.id===id?t:x);s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});});});
+ handle('move-task',(id,date,time)=>{const old=state.tasks.find(x=>x.id===id);if(!old)throw new Error('计划不存在');const t=cleanTask({...old,...shiftTaskDates(old,date),time:time||old.time},old);return change(s=>{s.tasks=s.tasks.map(x=>x.id===id?t:x);s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});});});
  handle('reminder-action',(id,action)=>change(s=>{const t=s.tasks.find(x=>x.id===id);if(!t)return;if(action==='snooze'){t.snoozeUntil=Date.now()+600000;}else if(action==='done'){t.done=true;t.snoozeUntil=null;}else if(action!=='dismiss')throw new Error('操作无效');s.history.forEach(h=>{if(h.taskId===id)h.dismissed=true;});}));
  handle('settings',settings=>{if('language' in settings&&!['zh-CN','en'].includes(settings.language))throw new Error('不支持的界面语言');if(typeof settings.autostart==='boolean')loginSettings.setOpenAtLogin(settings.autostart);const result=change(s=>{if(settings.language)s.settings.language=settings.language;if(typeof settings.sound==='boolean')s.settings.sound=settings.sound;if(typeof settings.popup==='boolean')s.settings.popup=settings.popup;if(typeof settings.checkUpdates==='boolean')s.settings.checkUpdates=settings.checkUpdates;});if(settings.language)refreshShellLanguage();return result;});
  handle('check-updates',async()=>{await updateController.check({manual:true});return updateSnapshot();});

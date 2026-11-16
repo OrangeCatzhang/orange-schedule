@@ -4,7 +4,7 @@
 
 # Orange Schedule: Open-Source Windows Calendar Planner, To-Do List and Desktop Sticky Notes
 
-Orange Schedule (橙子日程) is a **free, open-source Windows calendar planner and to-do list app**, with an EXE installer for **Windows 10 / 11 x64**. Organize work and study with a desktop calendar, daily or weekly desktop sticky notes, four-week planning and a weekly timetable. Scheduled reminders help you follow up on each task.
+Orange Schedule (橙子日程) is a **free, open-source Windows calendar planner and to-do list app**, with an EXE installer for **Windows 10 / 11 x64**. Organize work and study with a full-month calendar, daily or weekly desktop sticky notes, four-week planning and a weekly timetable. Set an end date or a number of days for projects that span several days. Scheduled reminders help you follow up on each task.
 
 Built with Electron, the app includes everything needed in its Windows installer; users do not need to install Node.js or a browser separately. Plans and settings stay in the current Windows user's data directory. Everyday planning works offline without an account. The source code is licensed under MIT.
 
@@ -25,7 +25,8 @@ The current version is **1.2.1**. The installer does not yet use a commercial co
 ## Features
 
 - **English and Chinese interfaces:** choose a language during installation or switch in Settings without restarting. Your task titles and notes stay exactly as written.
-- **Four-week calendar and weekly planning:** view the coming weeks and switch between a four-week calendar, a weekly timetable and a task list.
+- **Month calendar, four-week view and weekly planning:** view a full calendar month and navigate month by month, or switch to a four-week calendar, a weekly timetable or a task list. The app remembers your last view.
+- **Tasks spanning multiple days:** choose an end date or enter the number of days; the fields stay in sync and count both endpoints. A task spanning several days has one completion state and one reminder based on its start time.
 - **To-do and completed lists:** organize tasks by their scheduled date, mark them complete or incomplete, and filter by status.
 - **Daily and weekly desktop sticky notes:** view today's or this week's tasks in a separate desktop window, add tasks quickly and keep changes synchronized with the main calendar.
 - **Bottom placement by default, with an always-on-top option:** the sticky note returns below ordinary windows when opened, unpinned or unfocused. Use the pin button to keep it on top; text input and task checkboxes remain available.
@@ -49,6 +50,20 @@ The current version is **1.2.1**. The installer does not yet use a commercial co
 
 Click **New task** or press **N**. Click a date to view its plans, double-click an empty date area to create a plan, or click an existing plan to edit it. Use **Ctrl+K** to search titles and notes.
 
+### View a Calendar Month
+
+Choose **Month** at the top right of the calendar to see a full month, such as **November 2026**. The arrows move to the previous or next month, **Today** returns to the current month, and the date field jumps to the month containing your chosen date. Adjacent-month dates appear in a lighter shade to complete the week rows. Four-week, week and list views remain available, and the app remembers your last choice.
+
+### Set One Task to Span Several Days
+
+After choosing a **Start date**, select **End date (inclusive)** or enter **Number of days**. Changing either field updates the other. For example, **November 16–30, 2026** is **15 days**, including both endpoints; entering 15 days from November 16 produces the same end date. Use 1 day for a task that starts and ends on the same date.
+
+This creates **one task**. The month and four-week calendars show it on each covered date, and the weekly timetable shows it in the area for tasks spanning several days above the timed slots. Today, the selected-date panel and daily or weekly desktop notes include tasks overlapping their date range. Its reminder fires once based on the start date and time. Completing or deleting it affects the whole task, and all appearances share the same state. Dragging it to another date preserves its number of days.
+
+If you also select **Repeat**, each occurrence becomes a separate task with the same number of days. For example, a three-day task repeated weekly creates one three-day task each week. **Repeat until** limits the start date of the last occurrence; that occurrence's end date can be later.
+
+### Lists, Notes and Recurring Tasks
+
 In **Today**, tasks with notes show a single line of smaller gray text beneath their details, so short notes can be read without opening the editor. Longer notes end with an ellipsis; hover over the preview to see the note text. Line breaks are collapsed only in the preview, leaving the saved notes unchanged. Tasks without notes do not gain an extra row.
 
 In the **List** view, click **+ Add task** beside a date heading to add another task for that day. The date is filled in automatically, and the button remains available after saving. Multiple independent plans can share the same date and time.
@@ -69,7 +84,7 @@ New daily, weekday and weekly series store group information. When later occurre
 
 For grouped series, “subsequent” follows the original recurrence order. Rescheduling or renaming an individual occurrence does not change its group or original position in the series; the preview shows its actual date. Batch completion does not toggle already completed tasks back to incomplete. Batch deletion also removes the corresponding reminder records.
 
-Older versions did not store recurrence groups. For those tasks, the app proposes candidates only when **the creation timestamp, title, start time, duration, category, reminder, priority and notes all match**, then lists subsequent candidates by their current scheduled date and time. It explicitly asks you to review the list before choosing a batch action; matching titles alone do not merge tasks. Older tasks without a creation timestamp, or with an individually changed title or other matching field, may need to be handled separately.
+Older versions did not store recurrence groups. For those tasks, the app proposes candidates only when **the creation timestamp, title, start time, estimated duration, number of days, category, reminder, priority and notes all match**, then lists subsequent candidates by their current scheduled date and time. It explicitly asks you to review the list before choosing a batch action; matching titles alone do not merge tasks. Older tasks without a creation timestamp, or with an individually changed title or other matching field, may need to be handled separately.
 
 If another window changes a task while you are confirming a batch action, the operation stops and asks you to review the list again. Single-task deletion also checks the selected task, but changes to later occurrences do not block deletion of that one task.
 
@@ -143,6 +158,8 @@ The app was renamed from 周光 Weeklight to 橙子日程 (Orange Schedule) in 1
 
 By default, the app uses Electron's application data directory for the current user, usually `%APPDATA%\weeklight` on Windows. View or open the actual path from **Settings & backup**. Plans are stored in `plans.json`; the previous saved copy is `plans.json.bak`. App upgrades normally retain this directory. Export a backup before uninstalling or moving to another computer.
 
+Version 1.3.0 continues to read existing single-day tasks and older backups. Tasks spanning several days store an additional end date; exporting, importing and restarting preserve that date range and the task's shared completion state.
+
 Use the `WEEKLIGHT_DATA_DIR` environment variable to select another directory. The app does not automatically search for or migrate data from other paths. Users of early test versions can export JSON from the old version and import it into the current one.
 
 The app has no account service, cloud sync or telemetry. Automatic and manual update checks request only the repository's public version file or GitHub's public release information; they do not upload plans, notes or backups. Automatic checks can be disabled in Settings. Source code and public installers do not include personal plans, backups, browser caches or local verification reports.
@@ -177,9 +194,10 @@ npm run test:series
 npm run test:updates
 npm run test:branding
 npm run test:language
+npm run test:month
 ```
 
-Desktop tests require an interactive Windows desktop and use isolated test data. Build artifacts are written to `outputs/weeklight-1.2.1/`: `OrangeSchedule-Setup-1.2.1.exe` is the installer, and `win-unpacked/橙子日程.exe` can run directly if the entire `win-unpacked` folder is retained.
+Desktop tests require an interactive Windows desktop and use isolated test data. Build artifacts are written to `outputs/weeklight-1.3.0/`: `OrangeSchedule-Setup-1.3.0.exe` is the installer, and `win-unpacked/橙子日程.exe` can run directly if the entire `win-unpacked` folder is retained.
 
 `npm run test:ui` provides additional main-calendar regression checks. The optional `scripts/prepare-runtime.cjs` prepares Electron for offline use and requires Python and an official Electron ZIP with a matching checksum. It is not needed for a normal `npm ci` installation.
 
@@ -188,6 +206,7 @@ Desktop tests require an interactive Windows desktop and use isolated test data.
 - `src/main.cjs`: desktop windows, tray, data and reminders.
 - `src/reminder-copy.cjs`, `src/reminder-*.json`: 120 reminder quotations and their persistent rotation.
 - `src/core.cjs`, `src/task-series.cjs`, `src/data-path.cjs`: plan validation, recurrence groups, batch actions and data directory handling.
+- `src/task-dates.js`: shared date-range, calendar-day and rescheduling rules for the main calendar, desktop notes and data layer.
 - `src/task-actions.*`: shared action-scope selection for the three window types.
 - `src/update-*`, `src/updates.*`: stable-release checks, update notices and download links.
 - `src/renderer.js`, `src/style.css`: main calendar interface.

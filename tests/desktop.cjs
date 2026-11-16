@@ -5,7 +5,7 @@ const env={...process.env,WEEKLIGHT_DATA_DIR:dataDir};delete env.ELECTRON_RUN_AS
 try{
  app=await electron.launch({args:[root],env});const page=await app.firstWindow();await page.waitForSelector('.month-grid');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- assert.equal(await page.locator('.day-cell').count(),28);
+ await page.locator('[data-mode=four]').click();assert.equal(await page.locator('.day-cell').count(),28);
  await page.locator('.new-button').click();await page.locator('[name=title]').fill('UI 验证：阶段规划');
  await page.locator('[name=date]').fill('2026-12-28');await page.locator('[name=time]').fill('10:00');
  await page.locator('[name=reminder]').selectOption('-1');await page.locator('[name=repeat]').selectOption('4');

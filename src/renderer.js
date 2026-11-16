@@ -1,5 +1,6 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],api=window.weeklight;
 const i18n=window.WeeklightI18n,tr=(text,values)=>i18n.t(text,values);
+const dates=window.WeeklightDates;
 const paths={widget:'M4 4h16v16H4zM4 9h16M9 9v11M12 13h5M12 16h4',plus:'M12 5v14M5 12h14',calendar:'M4 5h16v16H4zM7 3v4M17 3v4M4 10h16M8 14h2M14 14h2M8 17h2',sun:'M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0',bell:'M18 8a6 6 0 0 0-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9M10 21h4',check:'m5 12 4 4L19 6',settings:'m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3zM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',search:'M16 10a6 6 0 1 1-12 0 6 6 0 0 1 12 0m-2 4 6 6',left:'m14 6-6 6 6 6',right:'m9 6 6 6-6 6',shield:'m12 3 8 3v6c0 4-8 9-8 9s-8-5-8-9V6zM8 12l3 3 5-6',clock:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0M12 7v5l3 2',leaf:'M20 4C7 2 2 8 6 16s16 3 14-12ZM5 21l10-12',arrow:'M7 17 17 7M7 7h10v10'};
 const icon=name=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(paths[name]||paths.calendar)+'"/></svg>';
 $$('[data-icon]').forEach(e=>e.innerHTML=icon(e.dataset.icon));
@@ -8,22 +9,26 @@ const key=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.ge
 const parse=s=>new Date(s+'T12:00:00');const add=(d,n)=>{d=new Date(d);d.setDate(d.getDate()+n);return d;};
 const monday=d=>add(d,-(d.getDay()+6)%7);const today=()=>key(new Date());
 const cats={work:{name:'工作 / 项目',short:'工作',color:'#6b9b87',bg:'#e9f3ed',ink:'#355e4b'},study:{name:'学习 / 成长',short:'学习',color:'#a195b9',bg:'#f1edf7',ink:'#6b5784'},life:{name:'生活 / 日常',short:'生活',color:'#c6a574',bg:'#fbf1df',ink:'#84602f'}};
-let state,view='calendar',mode='four',anchor=monday(new Date()),selected=today(),mini=new Date(),filter=null,query='',toastTimer,editing=null,busy=false;
-let dragId=null,dragCandidate=false,deferredRender=false,repeatEndAuto=true;
+const monthStart=d=>new Date(d.getFullYear(),d.getMonth(),1,12);
+let state,view='calendar',mode=['month','four','week','list'].includes(localStorage.getItem('weeklight.calendarMode'))?localStorage.getItem('weeklight.calendarMode'):'month',selected=today(),mini=new Date(),filter=null,query='',toastTimer,editing=null,busy=false;
+let anchor=mode==='month'?monthStart(new Date()):monday(new Date());
+const anchorFor=d=>mode==='month'?monthStart(d):monday(d);
+let dragId=null,dragOffset=0,dragCandidate=false,deferredRender=false,repeatEndAuto=true,editorSpanDays=1,editorSpanSource='end';
 function flushDeferredRender(){if(deferredRender&&!dragId&&!dragCandidate){deferredRender=false;render();}}
 let showCompleted=localStorage.getItem('weeklight.showCompleted')!=='false',listStatus='all';
 const matchesStatus=t=>listStatus==='all'||(listStatus==='done'?t.done:!t.done);
-const isOverdue=t=>!t.done&&t.date<today();
+const isOverdue=t=>!t.done&&dates.taskEndDate(t)<today();
 const sorted=ts=>ts.slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
 function filtered(ts=state.tasks){return sorted(ts.filter(t=>(!filter||t.category===filter)&&(!query||(t.title+' '+t.notes).toLowerCase().includes(query.toLowerCase()))));}
-function inRange(t,start=anchor,days=mode==='week'?7:28){return t.date>=key(start)&&t.date<key(add(start,days));}
-function dayTasks(d){return filtered().filter(t=>t.date===d);}
+function inRange(t,start=anchor,days){const end=days===undefined&&mode==='month'?new Date(start.getFullYear(),start.getMonth()+1,1,12):add(start,days??(mode==='week'?7:28));return dates.overlapsRange(t,key(start),key(end));}
+function dayTasks(d){return filtered().filter(t=>dates.occursOn(t,d));}
 function calendarDayTasks(d){return dayTasks(d).filter(t=>showCompleted||!t.done);}
 function style(t){const c=cats[t.category];return '--event-bg:'+c.bg+';--event-ink:'+c.ink+';--event-border:'+c.color;}
 function fmt(d){return i18n.getLanguage()==='en'?i18n.formatDate(d,{month:'short',day:'numeric'}):d.getMonth()+1+'月'+d.getDate()+'日';}
 function weekday(d){return tr(['周日','周一','周二','周三','周四','周五','周六'][d.getDay()]);}
 function monthLabel(d){return i18n.getLanguage()==='en'?i18n.formatDate(d,{month:'short'}):d.getMonth()+1+'月';}
-function rangeLabel(){const end=add(anchor,mode==='week'?6:27);return i18n.getLanguage()==='en'?fmt(anchor)+(anchor.getFullYear()!==end.getFullYear()?', '+anchor.getFullYear():'')+' – '+fmt(end)+', '+end.getFullYear():anchor.getFullYear()+'年 '+fmt(anchor)+' — '+fmt(end);}
+function rangeLabel(){if(mode==='month')return i18n.getLanguage()==='en'?i18n.formatDate(anchor,{year:'numeric',month:'long'}):anchor.getFullYear()+'年 '+(anchor.getMonth()+1)+'月';const end=add(anchor,mode==='week'?6:27);return i18n.getLanguage()==='en'?fmt(anchor)+(anchor.getFullYear()!==end.getFullYear()?', '+anchor.getFullYear():'')+' – '+fmt(end)+', '+end.getFullYear():anchor.getFullYear()+'年 '+fmt(anchor)+' — '+fmt(end);}
+function taskSpanLabel(t){return t.date+' — '+dates.taskEndDate(t)+' · '+tr('共 {count} 天',{count:dates.spanDays(t)});}
 let renderedLanguage=null;
 function applyLanguage(){
  i18n.setLanguage(state.settings.language||'zh-CN');
@@ -35,7 +40,7 @@ function applyLanguage(){
  $('#editor-title').textContent=tr(editing?'编辑计划':'新建计划');
  const duration=$('#task-form').elements.duration;
  [...duration.options].filter(o=>!o.dataset.i18n).forEach(o=>{o.textContent=tr('{count} 分钟',{count:o.value});});
- if($('#editor').open)syncRepeatOptions(false);
+ if($('#editor').open){syncRepeatOptions(false);syncTaskSpan('language');}
  if($('#settings-dialog').open)syncSettings();
 }
 
@@ -62,7 +67,7 @@ function render(){
  $('#filter-label').textContent=tr(filter?cats[filter].name:'全部计划')+(query?tr(' · 搜索结果'):'');
  $('.segmented').hidden=view!=='calendar';
  $('#previous').disabled=view!=='calendar';$('#next').disabled=view!=='calendar';
- $$('.segmented button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+ $$('.segmented button').forEach(b=>{b.classList.toggle('active',b.dataset.mode===mode);b.setAttribute('aria-pressed',String(b.dataset.mode===mode));});
  $('#date-range').textContent=view==='calendar'? rangeLabel():({today:fmt(new Date())+' · '+tr('今天'),inbox:tr('待处理提醒'),done:tr('已完成计划')}[view]);
  const isList=view==='today'||(view==='calendar'&&mode==='list');
  $('#list-filter').hidden=!isList;
@@ -72,31 +77,35 @@ function render(){
  $('#show-completed').checked=showCompleted;
  $('.view-options').hidden=view==='inbox';
  $$('#list-filter button').forEach(b=>{b.classList.toggle('active',b.dataset.status===listStatus);b.setAttribute('aria-pressed',String(b.dataset.status===listStatus));});
- let visible=filtered().filter(t=>view==='today'?(t.date===today()||isOverdue(t)):view==='done'?t.done:inRange(t));
+ let visible=filtered().filter(t=>view==='today'?(dates.occursOn(t,today())||isOverdue(t)):view==='done'?t.done:inRange(t));
  if(isList)visible=visible.filter(matchesStatus);
  else if(view==='calendar'&&!showCompleted)visible=visible.filter(t=>!t.done);
  $('#view-count').textContent=tr('{todo} 待办 · {done} 已办',{todo:visible.filter(t=>!t.done).length,done:visible.filter(t=>t.done).length});
  $('#calendar-tip').textContent=tr(view==='calendar'?(mode==='list'?'日期旁 ＋ 添加计划 · 点击计划编辑':'点击日期查看 · 拖动计划改期 · N 新建'):'勾选完成 · 点击计划编辑');
  const scroll=$('.week-scroll')?.scrollTop;
- if(view==='calendar'&&mode==='four')renderFour();
+ if(view==='calendar'&&(mode==='four'||mode==='month'))renderFour();
  else if(view==='calendar'&&mode==='week')renderWeek();
  else renderList(pending);
  if($('.week-scroll'))$('.week-scroll').scrollTop=scroll??8*72;
  renderMini();renderPanel();
 }
 function event(t,extra='',className=''){
- return '<button class="event '+className+(t.done?' done':'')+'" draggable="true" data-task="'+esc(t.id)+'" style="'+style(t)+extra+'" title="'+esc(t.title+' · '+t.time)+'"><span class="event-time">'+esc(t.time)+(t.priority==='high'?'<span class="event-important">◆</span>':'')+'</span><div class="event-title">'+(t.done?'✓ ':'')+esc(t.title)+'</div></button>';
+ const spanning=dates.spanDays(t)>1;
+ return '<button class="event '+className+(spanning?' spanning':'')+(t.done?' done':'')+'" draggable="true" data-task="'+esc(t.id)+'" style="'+style(t)+extra+'" title="'+esc(t.title+' · '+(spanning?taskSpanLabel(t):t.time))+'"><span class="event-time">'+esc(spanning?tr('跨天 · {count} 天',{count:dates.spanDays(t)}):t.time)+(t.priority==='high'?'<span class="event-important">◆</span>':'')+'</span><div class="event-title">'+(t.done?'✓ ':'')+esc(t.title)+'</div></button>';
 }
 function renderFour(){
- $('#calendar').innerHTML='<div class="weekday-row">'+['周一','周二','周三','周四','周五','周六','周日'].map(d=>'<span>'+tr(d)+'</span>').join('')+'</div><div class="month-grid">'+Array.from({length:28},(_,i)=>{
- const d=add(anchor,i),k=key(d),ts=calendarDayTasks(k);
- return '<div class="day-cell '+(k===selected?'selected':'')+'" data-date="'+k+'"><div class="day-number"><b class="'+(k===today()?'today':'')+'">'+d.getDate()+'</b><span>'+(d.getDate()===1?monthLabel(d):'')+'</span><button class="day-add" data-new-date="'+k+'" aria-label="'+esc(tr('{date} 新建计划',{date:k}))+'">+</button></div>'+ts.slice(0,3).map(t=>event(t)).join('')+(ts.length>3?'<button class="more-button" data-select="'+k+'">'+tr('还有 {count} 项',{count:ts.length-3})+'</button>':'')+(!ts.length&&k===today()?'<div class="empty-hint">'+tr('暂无计划')+'<br>'+tr('点击 ＋ 添加')+'</div>':'')+'</div>';
+ const start=mode==='month'?monday(monthStart(anchor)):anchor,last=new Date(anchor.getFullYear(),anchor.getMonth()+1,0,12);
+ const count=mode==='month'?Math.ceil(dates.spanDays({date:key(start),endDate:key(last)})/7)*7:28,limit=mode==='month'?2:3;
+ $('#calendar').innerHTML='<div class="weekday-row">'+['周一','周二','周三','周四','周五','周六','周日'].map(d=>'<span>'+tr(d)+'</span>').join('')+'</div><div class="month-grid '+(mode==='month'?'natural-month':'')+'" style="--month-rows:'+count/7+'">'+Array.from({length:count},(_,i)=>{
+ const d=add(start,i),k=key(d),ts=calendarDayTasks(k),outside=mode==='month'&&d.getMonth()!==anchor.getMonth();
+ return '<div class="day-cell '+(outside?'outside-month ':'')+(k===selected?'selected':'')+'" data-date="'+k+'"><div class="day-number"><b class="'+(k===today()?'today':'')+'">'+d.getDate()+'</b><span>'+(d.getDate()===1?monthLabel(d):'')+'</span><button class="day-add" data-new-date="'+k+'" aria-label="'+esc(tr('{date} 新建计划',{date:k}))+'">+</button></div>'+ts.slice(0,limit).map(t=>event(t)).join('')+(ts.length>limit?'<button class="more-button" data-select="'+k+'">'+tr('还有 {count} 项',{count:ts.length-limit})+'</button>':'')+(!ts.length&&k===today()?'<div class="empty-hint">'+tr('暂无计划')+'<br>'+tr('点击 ＋ 添加')+'</div>':'')+'</div>';
  }).join('')+'</div>';
 }
 function renderWeek(){
  const days=Array.from({length:7},(_,i)=>add(anchor,i));
- $('#calendar').innerHTML='<div class="week-header"><span></span>'+days.map((d,i)=>'<button data-select="'+key(d)+'" class="'+(key(d)===today()?'today':'')+'">'+weekday(d)+'<b>'+d.getDate()+'</b></button>').join('')+'</div><div class="week-scroll"><div class="week-body"><div class="time-labels">'+Array.from({length:24},(_,h)=>'<div>'+String(h).padStart(2,'0')+':00</div>').join('')+'</div>'+days.map(d=>{
- const ts=calendarDayTasks(key(d));const placements=[];let cluster=[],end=-1;
+ const spanBand=filtered().some(t=>dates.spanDays(t)>1&&inRange(t)&&(!t.done||showCompleted))?'<div class="week-spans"><span class="span-label">'+tr('跨天')+'</span>'+days.map(d=>'<div class="span-cell" data-date="'+key(d)+'">'+calendarDayTasks(key(d)).filter(t=>dates.spanDays(t)>1).map(t=>event(t)).join('')+'</div>').join('')+'</div>':'';
+ $('#calendar').innerHTML='<div class="week-header"><span></span>'+days.map((d,i)=>'<button data-select="'+key(d)+'" class="'+(key(d)===today()?'today':'')+'">'+weekday(d)+'<b>'+d.getDate()+'</b></button>').join('')+'</div>'+spanBand+'<div class="week-scroll"><div class="week-body"><div class="time-labels">'+Array.from({length:24},(_,h)=>'<div>'+String(h).padStart(2,'0')+':00</div>').join('')+'</div>'+days.map(d=>{
+ const ts=calendarDayTasks(key(d)).filter(t=>dates.spanDays(t)===1);const placements=[];let cluster=[],end=-1;
  const flush=()=>{const width=Math.max(1,...cluster.map(e=>e.lane+1));cluster.forEach(e=>placements.push({...e,width}));cluster=[];};
  ts.forEach(t=>{const start=+t.time.slice(0,2)*60 + +t.time.slice(3),finish=start+Math.max(t.duration,25);if(start>=end){flush();end=-1;}let lane=0;while(cluster.some(e=>e.lane===lane&&e.end>start))lane++;cluster.push({t,start,end:finish,lane});end=Math.max(end,finish);});flush();
  return '<div class="week-column">'+Array.from({length:24},(_,h)=>'<div class="hour-cell" data-date="'+key(d)+'" data-time="'+String(h).padStart(2,'0')+':00"></div>').join('')+placements.map(e=>event(e.t,';top:'+e.start*1.2+'px;height:'+Math.min(Math.max(28,e.t.duration*1.2-3),1728-e.start*1.2)+'px;left:calc('+e.lane/e.width*100+'% + 2px);width:calc('+100/e.width+'% - 4px)','week-event')).join('')+(key(d)===today()?'<div class="now-line" style="top:'+((new Date().getHours()*60+new Date().getMinutes())*1.2)+'px"></div>':'')+'</div>';
@@ -104,7 +113,7 @@ function renderWeek(){
 }
 function row(t,previewNotes=false){
  const note=previewNotes===true?String(t.notes||'').replace(/\s+/g,' ').trim():'';
- return '<div class="task-row '+(t.done?'done':'')+(isOverdue(t)?' overdue':'')+(note?' has-note':'')+'"><button class="task-check '+(t.done?'checked':'')+'" data-toggle="'+esc(t.id)+'" aria-label="'+esc(tr(t.done?'取消完成 {title}':'完成 {title}',{title:t.title}))+'">'+(t.done?'✓':'')+'</button><div class="task-info" role="button" tabindex="0" data-task="'+esc(t.id)+'"><strong>'+esc(t.title)+(t.priority==='high'?' <span class="event-important">◆</span>':'')+'</strong><p>'+(isOverdue(t)?'<span class="overdue-date">'+fmt(parse(t.date))+' · </span>':'')+t.time+' · '+tr('{count} 分钟',{count:t.duration})+(t.reminder>=0?tr(' · 提醒'):'')+'</p><span class="tag" style="background:'+cats[t.category].bg+';color:'+cats[t.category].ink+'">'+tr(cats[t.category].short)+'</span>'+(note?'<span class="task-note" title="'+esc(t.notes)+'">'+esc(note)+'</span>':'')+'</div></div>';
+ return '<div class="task-row '+(t.done?'done':'')+(isOverdue(t)?' overdue':'')+(note?' has-note':'')+'"><button class="task-check '+(t.done?'checked':'')+'" data-toggle="'+esc(t.id)+'" aria-label="'+esc(tr(t.done?'取消完成 {title}':'完成 {title}',{title:t.title}))+'">'+(t.done?'✓':'')+'</button><div class="task-info" role="button" tabindex="0" data-task="'+esc(t.id)+'"><strong>'+esc(t.title)+(t.priority==='high'?' <span class="event-important">◆</span>':'')+'</strong><p>'+(isOverdue(t)?'<span class="overdue-date">'+fmt(parse(t.date))+' · </span>':'')+(dates.spanDays(t)>1?esc(taskSpanLabel(t)):t.time+' · '+tr('{count} 分钟',{count:t.duration}))+(t.reminder>=0?tr(' · 提醒'):'')+'</p><span class="tag" style="background:'+cats[t.category].bg+';color:'+cats[t.category].ink+'">'+tr(cats[t.category].short)+'</span>'+(note?'<span class="task-note" title="'+esc(t.notes)+'">'+esc(note)+'</span>':'')+'</div></div>';
 }
 function empty(title,desc){return '<div class="empty-state"><div class="empty-icon">'+icon('leaf')+'</div><h3>'+tr(title)+'</h3><p>'+tr(desc)+'</p><button class="secondary" data-action="new">'+icon('plus')+' '+tr('安排一件事')+'</button></div>';}
 function renderList(pending){
@@ -112,12 +121,12 @@ function renderList(pending){
   const hs=pending.filter(h=>filtered().some(t=>t.id===h.taskId)).reverse();
   $('#calendar').innerHTML='<div class="list-view">'+(hs.length?hs.map(h=>{const t=state.tasks.find(t=>t.id===h.taskId);return '<div class="reminder-row"><h3>'+esc(t.title)+'</h3><p>'+t.date+' '+t.time+' · '+tr(cats[t.category].name)+'</p><div class="actions"><button class="small-button" data-reminder="'+t.id+'" data-action="done">'+tr('✓ 完成')+'</button><button class="small-button" data-reminder="'+t.id+'" data-action="snooze">'+tr('10 分钟后提醒')+'</button><button class="text-button" data-reminder="'+t.id+'" data-action="dismiss">'+tr('知道了')+'</button></div></div>';}).join(''):empty('暂时没有待处理提醒','计划到达提醒时间后，会出现在这里。'))+'</div>';return;
  }
- let ts=filtered().filter(t=>view==='today'?(t.date===today()||isOverdue(t)):view==='done'?t.done:inRange(t));
+ let ts=filtered().filter(t=>view==='today'?(dates.occursOn(t,today())||isOverdue(t)):view==='done'?t.done:inRange(t));
  if(view!=='done')ts=ts.filter(matchesStatus);
  const groups=[...new Set(ts.map(t=>t.date))];
  let content='';
  if(view==='today'){
-  const overdue=ts.filter(isOverdue),current=ts.filter(t=>t.date===today());
+  const overdue=ts.filter(isOverdue),current=ts.filter(t=>dates.occursOn(t,today()));
   if(overdue.length)content+='<section class="today-group overdue-group"><h3 class="list-group-title">'+tr('逾期未完成')+' <span>'+overdue.length+'</span></h3><p class="group-description">'+tr('可以完成这些计划，或点击修改日期。')+'</p>'+overdue.map(task=>row(task,true)).join('')+'</section>';
   if(current.length)content+='<section class="today-group"><h3 class="list-group-title">'+tr('今天')+' <span>'+current.length+'</span></h3>'+current.map(task=>row(task,true)).join('')+'</section>';
  }else content=groups.map(d=>'<section class="list-day-group" data-list-date="'+d+'"><h3 class="list-group-title">'+fmt(parse(d))+' · '+weekday(parse(d))+'<span>'+ts.filter(t=>t.date===d).length+'</span>'+(view==='calendar'?'<button type="button" class="list-day-add" data-new-date="'+d+'" aria-label="'+esc(tr('{date} 添加计划',{date:d}))+'">'+icon('plus')+tr('添加计划')+'</button>':'')+'</h3>'+ts.filter(t=>t.date===d).map(row).join('')+'</section>').join('');
@@ -128,13 +137,34 @@ function renderMini(){
  $$('.mini-week span').forEach((node,i)=>{node.textContent=(i18n.getLanguage()==='en'?['M','T','W','T','F','S','S']:['一','二','三','四','五','六','日'])[i];});
  $('#mini-label').textContent=i18n.getLanguage()==='en'?i18n.formatDate(mini,{year:'numeric',month:'long'}):mini.getFullYear()+'年 '+(mini.getMonth()+1)+'月';
  const first=monday(new Date(mini.getFullYear(),mini.getMonth(),1));
- $('#mini-days').innerHTML=Array.from({length:42},(_,i)=>{const d=add(first,i),k=key(d);return '<button data-mini="'+k+'" class="'+(d.getMonth()!==mini.getMonth()?'outside ':'')+(k===selected?'selected ':'')+(state.tasks.some(t=>t.date===k&&!t.done)?'dot':'')+'" aria-label="'+k+'">'+d.getDate()+'</button>';}).join('');
+ $('#mini-days').innerHTML=Array.from({length:42},(_,i)=>{const d=add(first,i),k=key(d);return '<button data-mini="'+k+'" class="'+(d.getMonth()!==mini.getMonth()?'outside ':'')+(k===selected?'selected ':'')+(state.tasks.some(t=>dates.occursOn(t,k)&&!t.done)?'dot':'')+'" aria-label="'+k+'">'+d.getDate()+'</button>';}).join('');
 }
 function renderPanel(){
  const d=parse(selected),ts=dayTasks(selected),week=state.tasks.filter(t=>inRange(t,monday(d),7)),done=week.filter(t=>t.done).length,pct=week.length?Math.round(done/week.length*100):0;
  $('#day-panel').innerHTML='<div class="day-panel-inner"><div class="panel-heading"><div><div class="panel-eyebrow">'+tr(selected===today()?'今天':'所选日期')+'</div><h2 class="panel-title">'+fmt(d)+'</h2><div class="panel-subtitle">'+weekday(d)+' · '+tr('{count} 项计划',{count:ts.length})+'</div></div>'+icon('sun')+'</div><div class="panel-list">'+(ts.length?ts.map(row).join(''):'<div class="empty-panel"><div class="empty-icon">'+icon('leaf')+'</div><p>'+tr('这一天还没有计划')+'</p><small>'+tr('点击下方按钮添加')+'</small></div>')+'</div><button class="panel-add" data-new-date="'+selected+'">'+tr('＋ 为这天添加计划')+'</button></div><div class="week-focus"><h3>'+icon('leaf')+' '+tr('这一周的进展')+'</h3><p><strong>'+pct+'<span style="font-size:11px">%</span></strong><span style="float:right;margin-top:10px">'+tr('{done} / {total} 已完成',{done,total:week.length})+'</span></p><div class="progress-track"><i style="width:'+pct+'%"></i></div></div>';
 }
 function setView(v){view=v;if(v==='today')selected=today();render();}
+function syncTaskSpan(source){
+ source=source==='language'?editorSpanSource:(editorSpanSource=source);
+ const f=$('#task-form'),start=f.elements.date.value,end=f.elements.endDate,days=f.elements.spanDays;
+ end.min=start;end.setCustomValidity('');days.setCustomValidity('');
+ try{
+  if(source==='start'||source==='days')end.value=dates.endDateForDays(start,source==='days'?Number(days.value):editorSpanDays);
+  if(!dates.isDateKey(end.value))throw new Error('请选择有效的结束日期');
+  if(end.value<start)throw new Error('结束日期不能早于开始日期');
+  editorSpanDays=dates.spanDays({date:start,endDate:end.value});days.value=editorSpanDays;
+ }catch(error){(source==='days'?days:end).setCustomValidity(i18n.translateError(error));}
+ renderSpanHint();
+}
+function renderSpanHint(){
+ const repeat=$('#task-form').elements.repeat.value;
+ let text=tr('首尾两天都计入。一项跨天计划只完成一次，提醒按开始日期与时间触发。');
+ if(!editing&&repeat!=='1'&&editorSpanDays>1){
+  text+=' '+tr('每次重复会生成单独的跨天计划，每项持续 {count} 天。',{count:editorSpanDays});
+  if(['daily','weekdays'].includes(repeat))text+=' '+tr('重复结束日期限制各项的开始日期，最后一项可能在此日期之后结束。');
+ }
+ $('#span-hint').textContent=text;
+}
 function syncRepeatOptions(updateEnd=true){
  const f=$('#task-form'),frequency=f.elements.repeat.value,weekdays=frequency==='weekdays',ranged=!editing&&['daily','weekdays'].includes(frequency),until=f.elements.repeatUntil,start=f.elements.date.value;
  $('#repeat-until-field').hidden=!ranged;until.disabled=!ranged;until.required=ranged;until.min=start;
@@ -150,29 +180,33 @@ function syncRepeatOptions(updateEnd=true){
   const rule=tr(weekdays?'仅周一至周五，跳过周末；不自动识别法定节假日及调休。':'包含结束当天。每天可分别修改、完成或删除。');
   $('#form-hint').textContent=days<=0?tr('请选择不早于开始日期的结束日期。'):count===0?tr('所选日期范围内没有工作日，请调整日期。'):count>10000?tr('最多生成 10000 项，请缩短日期范围。'):tr(weekdays?'将创建 {count} 项工作日计划。':'将创建 {count} 项每日计划。',{count})+rule;
  }else $('#form-hint').textContent=tr('重复计划会生成独立事项，可分别修改和完成。');
+ renderSpanHint();
 }
 $('#task-form [name=repeat]').onchange=syncRepeatOptions;
 $('#task-form [name=repeatUntil]').onchange=()=>{repeatEndAuto=false;syncRepeatOptions();};
-$('#task-form [name=date]').onchange=syncRepeatOptions;
+$('#task-form [name=date]').onchange=()=>{syncTaskSpan('start');syncRepeatOptions();};
+$('#task-form [name=endDate]').oninput=()=>syncTaskSpan('end');
+$('#task-form [name=spanDays]').oninput=()=>syncTaskSpan('days');
 function openEditor(t=null,date=selected,time='09:00'){
  editing=t;repeatEndAuto=true;const f=$('#task-form');f.reset();
  f.elements.id.value=t?.id||'';f.elements.title.value=t?.title||'';f.elements.date.value=t?.date||date;f.elements.time.value=t?.time||time;
+ editorSpanDays=t?dates.spanDays(t):1;f.elements.endDate.value=t?dates.taskEndDate(t):date;f.elements.spanDays.value=editorSpanDays;syncTaskSpan('end');
  for(const n of ['duration','category','reminder','notes'])if(t){if(n==='duration'&&![...f.elements.duration.options].some(o=>o.value===String(t.duration)))f.elements.duration.add(new Option(tr('{count} 分钟',{count:t.duration}),t.duration));f.elements[n].value=t[n];}
  f.elements.priority.checked=t?.priority==='high';$('#editor-title').textContent=tr(t?'编辑计划':'新建计划');$('#repeat-field').hidden=!!t;$('#delete-task').hidden=!t;$('#form-error').textContent='';
  syncRepeatOptions();
  openDialog($('#editor'));f.elements.title.focus();
 }
 document.addEventListener('click',async e=>{
- const b=e.target.closest('button,[data-task],.day-cell,.hour-cell');if(!b)return;
+ const b=e.target.closest('button,[data-task],.day-cell,.hour-cell,.span-cell');if(!b)return;
  if(b.dataset.reminder){await run(()=>b.dataset.action==='done'?window.WeeklightTaskActions.act(b.dataset.reminder,'complete'):api.reminderAction(b.dataset.reminder,b.dataset.action),'已更新提醒');return;}
  if(b.dataset.task){const t=state.tasks.find(t=>t.id===b.dataset.task);if(t)openEditor(t);return;}
  if(b.dataset.toggle){const t=state.tasks.find(t=>t.id===b.dataset.toggle);if(t)await run(()=>window.WeeklightTaskActions.act(t.id,t.done?'reopen':'complete'));return;}
  if(b.dataset.newDate){selected=b.dataset.newDate;openEditor(null,selected);return;}
  if(b.dataset.view){setView(b.dataset.view);return;}
- if(b.dataset.mode){mode=b.dataset.mode;render();return;}
+ if(b.dataset.mode){mode=b.dataset.mode;localStorage.setItem('weeklight.calendarMode',mode);anchor=anchorFor(parse(selected));render();return;}
  if(b.dataset.status){listStatus=b.dataset.status;render();return;}
  if(b.dataset.category){filter=filter===b.dataset.category?null:b.dataset.category;render();return;}
- if(b.dataset.mini){selected=b.dataset.mini;anchor=monday(parse(selected));mini=parse(selected);view='calendar';render();return;}
+ if(b.dataset.mini){selected=b.dataset.mini;anchor=anchorFor(parse(selected));mini=parse(selected);view='calendar';render();return;}
  if(b.dataset.select){selected=b.dataset.select;mini=parse(selected);render();return;}
  if(b.dataset.action==='new'){openEditor();return;}if(b.dataset.action==='inbox'){setView('inbox');return;}
  if(b.classList.contains('close-dialog')){b.closest('dialog').close();return;}
@@ -184,23 +218,23 @@ document.addEventListener('keydown',e=>{
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#search-row').hidden=false;$('#search').focus();}
  if(!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)&&!e.ctrlKey&&!e.metaKey&&e.key.toLowerCase()==='n'){e.preventDefault();openEditor();}
 });
-function moveRange(days){anchor=add(anchor,days);selected=key(anchor);mini=parse(selected);render();}
+function moveRange(days){anchor=mode==='month'?new Date(anchor.getFullYear(),anchor.getMonth()+Math.sign(days),1,12):add(anchor,days);selected=key(anchor);mini=parse(selected);render();}
 $('#previous').onclick=()=>moveRange(mode==='week'?-7:-28);
 $('#next').onclick=()=>moveRange(mode==='week'?7:28);
-$('#go-today').onclick=()=>{anchor=monday(new Date());selected=today();mini=new Date();if(view!=='calendar')view='today';render();};
+$('#go-today').onclick=()=>{anchor=anchorFor(new Date());selected=today();mini=new Date();if(view!=='calendar')view='today';render();};
 $('#mini-prev').onclick=()=>{mini=new Date(mini.getFullYear(),mini.getMonth()-1,1);renderMini();};
 $('#mini-next').onclick=()=>{mini=new Date(mini.getFullYear(),mini.getMonth()+1,1);renderMini();};
 $('#reset-filter').onclick=()=>{filter=null;render();};
 $('#open-widget').onclick=()=>run(()=>api.openWidget());
 $('#show-completed').onchange=e=>{showCompleted=e.target.checked;localStorage.setItem('weeklight.showCompleted',String(showCompleted));render();};
-$('#jump-date').onchange=e=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(e.target.value))return;selected=e.target.value;mini=parse(selected);anchor=monday(mini);render();};
+$('#jump-date').onchange=e=>{if(!dates.isDateKey(e.target.value))return;selected=e.target.value;mini=parse(selected);anchor=anchorFor(mini);render();};
 $('#search-button').onclick=()=>{$('#search-row').hidden=!$('#search-row').hidden;if(!$('#search-row').hidden)$('#search').focus();};
 $('#search').oninput=e=>{query=e.target.value.trim();render();};
 $('#clear-search').onclick=()=>{query='';$('#search').value='';render();};
 $('#task-form').onsubmit=async e=>{
- e.preventDefault();if(busy)return;busy=true;const submit=e.target.querySelector('[type=submit]');submit.disabled=true;
+ e.preventDefault();if(busy||!e.target.reportValidity())return;busy=true;const submit=e.target.querySelector('[type=submit]');submit.disabled=true;
  const data=Object.fromEntries(new FormData(e.target));data.priority=e.target.elements.priority.checked?'high':'normal';data.done=editing?.done||false;
- try{state=await api.saveTask(data,editing?1:['daily','weekdays'].includes(data.repeat)?{frequency:data.repeat,until:data.repeatUntil}:Number(data.repeat));$('#editor').close();selected=data.date;if(!editing&&data.repeat==='weekdays'){while([0,6].includes(parse(selected).getDay()))selected=key(add(parse(selected),1));}mini=parse(selected);if(!inRange({date:selected}))anchor=monday(mini);if(view==='inbox'||view==='done')view='calendar';render();toast(editing?'计划已更新':'计划已保存');}
+ try{state=await api.saveTask(data,editing?1:['daily','weekdays'].includes(data.repeat)?{frequency:data.repeat,until:data.repeatUntil}:Number(data.repeat));$('#editor').close();selected=data.date;if(!editing&&data.repeat==='weekdays'){while([0,6].includes(parse(selected).getDay()))selected=key(add(parse(selected),1));}mini=parse(selected);if(!inRange({date:selected}))anchor=anchorFor(mini);if(view==='inbox'||view==='done')view='calendar';render();toast(editing?'计划已更新':'计划已保存');}
  catch(e){$('#form-error').textContent=i18n.translateError(e);}
  finally{busy=false;submit.disabled=false;}
 };
@@ -208,17 +242,17 @@ $('#delete-task').onclick=async()=>{if(!editing)return;const id=editing.id;const
 document.addEventListener('pointerdown',e=>{dragCandidate=!!e.target.closest('.event');});
 for(const name of ['pointerup','pointercancel'])document.addEventListener(name,()=>{dragCandidate=false;setTimeout(flushDeferredRender,0);});
 function dropCell(e){
- const cell=e.target.closest('.day-cell,.hour-cell');if(cell)return cell;
+ const cell=e.target.closest('.day-cell,.hour-cell,.span-cell');if(cell)return cell;
  const column=e.target.closest('.week-column');if(!column)return null;
  const hour=Math.max(0,Math.min(23,Math.floor((e.clientY-column.getBoundingClientRect().top)/72)));
  return column.querySelectorAll('.hour-cell')[hour];
 }
-function clearDrag(){dragId=null;dragCandidate=false;$$('.dragover').forEach(e=>e.classList.remove('dragover'));}
-document.addEventListener('dragstart',e=>{const t=e.target.closest('.event');if(t){dragCandidate=false;dragId=t.dataset.task;e.dataTransfer.setData('text/plain',dragId);e.dataTransfer.effectAllowed='move';}});
+function clearDrag(){dragId=null;dragOffset=0;dragCandidate=false;$$('.dragover').forEach(e=>e.classList.remove('dragover'));}
+document.addEventListener('dragstart',e=>{const t=e.target.closest('.event');if(t){dragCandidate=false;dragId=t.dataset.task;const task=state.tasks.find(task=>task.id===dragId),grabDate=t.closest('[data-date]')?.dataset.date;dragOffset=task&&grabDate?Math.max(0,dates.spanDays({date:task.date,endDate:grabDate})-1):0;e.dataTransfer.setData('text/plain',dragId);e.dataTransfer.effectAllowed='move';}});
 document.addEventListener('dragover',e=>{const cell=dropCell(e);if(cell&&dragId){e.preventDefault();e.dataTransfer.dropEffect='move';$$('.dragover').filter(el=>el!==cell).forEach(el=>el.classList.remove('dragover'));cell.classList.add('dragover');}});
-document.addEventListener('dragleave',e=>{const cell=e.target.closest('.day-cell,.hour-cell');if(cell&&!cell.contains(e.relatedTarget))cell.classList.remove('dragover');});
+document.addEventListener('dragleave',e=>{const cell=e.target.closest('.day-cell,.hour-cell,.span-cell');if(cell&&!cell.contains(e.relatedTarget))cell.classList.remove('dragover');});
 document.addEventListener('dragend',()=>{clearDrag();flushDeferredRender();});
-document.addEventListener('drop',async e=>{const cell=dropCell(e),id=dragId||e.dataTransfer.getData('text/plain');if(cell&&state.tasks.some(t=>t.id===id)){e.preventDefault();clearDrag();await run(()=>api.moveTask(id,cell.dataset.date,cell.dataset.time),'计划已改期');flushDeferredRender();}});
+document.addEventListener('drop',async e=>{const cell=dropCell(e),id=dragId||e.dataTransfer.getData('text/plain');if(cell&&state.tasks.some(t=>t.id===id)){e.preventDefault();const newStart=key(add(parse(cell.dataset.date),-dragOffset));clearDrag();await run(()=>api.moveTask(id,newStart,cell.dataset.time),'计划已改期');flushDeferredRender();}});
 let settingsBusy=false,settingsError='';
 const settingsErrorText=e=>e.message.replace(/^Error invoking remote method '[^']+': Error: /,'');
 $('#settings-button').onclick=async()=>{
@@ -252,11 +286,11 @@ $('#load-samples').onclick=async()=>{
  try{
  const base=monday(new Date());const examples=[['梳理本周优先事项',0,'09:00','work',60],['留给深度工作的时间',1,'10:00','work',120],['读完一章，记下想法',2,'19:30','study',45],['散步，给自己充充电',3,'18:00','life',30],['整理项目进展',4,'14:00','work',60],['一周回顾与下周计划',6,'17:00','life',30],['把一个新想法做成小实验',8,'09:30','study',90],['推进关键里程碑',10,'14:00','work',120],['和朋友一起吃晚餐',12,'18:30','life',90],['整理阅读笔记',16,'20:00','study',60],['项目阶段复盘',18,'15:00','work',60],['为下个月留出方向',25,'10:00','life',60]];
  for(const [title,i,time,category,duration]of examples){const name=tr('[示例] {title}',{title:tr(title)});const names=['zh-CN','en'].map(language=>i18n.t('[示例] {title}',{title:i18n.t(title,{},language)},language));if(!state.tasks.some(t=>names.includes(t.title)))await api.saveTask({title:name,date:key(add(base,i)),time,category,duration,reminder:-1,notes:tr('这是示例计划，可以修改或删除。'),priority:'normal'},1);}
- toast('已添加示例计划，提醒均为关闭');$('#settings-dialog').close();view='calendar';anchor=base;selected=today();mini=new Date();render();
+ toast('已添加示例计划，提醒均为关闭');$('#settings-dialog').close();view='calendar';anchor=anchorFor(new Date());selected=today();mini=new Date();render();
  }catch(e){toast(e.message);}finally{busy=false;$('#load-samples').disabled=false;}
 };
 api.onState(s=>{state=s;render();if($('#settings-dialog').open&&!settingsBusy)syncSettings();});
 api.onNew(date=>openEditor(null,typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)?date:selected));api.onError(toast);
-api.onEditTask?.(async id=>{try{state=await api.get();const task=state.tasks.find(t=>t.id===id);if(!task){toast('这项计划已被删除');return;}selected=task.date;anchor=monday(parse(selected));mini=parse(selected);view='calendar';render();openEditor(task);}catch(e){toast(tr('无法打开计划：{error}',{error:e.message}));}});
+api.onEditTask?.(async id=>{try{state=await api.get();const task=state.tasks.find(t=>t.id===id);if(!task){toast('这项计划已被删除');return;}selected=task.date;anchor=anchorFor(parse(selected));mini=parse(selected);view='calendar';render();openEditor(task);}catch(e){toast(tr('无法打开计划：{error}',{error:e.message}));}});
 api.get().then(s=>{state=s;render();if(s.startupError)toast(s.startupError);}).catch(e=>toast(tr('无法读取数据：{error}',{error:e.message})));
 setInterval(()=>{if(!document.querySelector('dialog[open]'))render();},60000);

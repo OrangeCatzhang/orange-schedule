@@ -41,3 +41,5 @@ html[lang=en] .widget-footer>span,html[lang=en] .widget-footer button{min-width:
  .widget-footer{padding-top:5px}
  .widget-footer button{padding-top:0;padding-bottom:0}
 }
+
+.task-span{display:block;font-size:11px;line-height:1.5;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}

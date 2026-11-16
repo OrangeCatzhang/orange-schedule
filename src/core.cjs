@@ -3,6 +3,7 @@ const crypto = require('node:crypto');
 const {normalizeRotation}=require('./reminder-copy.cjs');
 const {validateSeriesTasks}=require('./task-series.cjs');
 const {normalizeLanguage}=require('./i18n.js');
+const {isDateKey,shiftTaskDates}=require('./task-dates.js');
 const CATEGORIES = ['work','study','life'];
 function dateKey(d) { return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-'); }
 function at(task) { return new Date(task.date+'T'+task.time+':00').getTime(); }
@@ -11,12 +12,18 @@ function cleanTask(input, existing) {
   const title=String(input.title||'').trim();
   if (!title || title.length>160) throw new Error('请填写 1–160 字的计划名称');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date||'') || !Number.isFinite(new Date(input.date+'T12:00:00').getTime()) || dateKey(new Date(input.date+'T12:00:00'))!==input.date) throw new Error('请选择有效日期');
+  // Older callers can omit endDate when editing. Preserve their task's span,
+  // including when they move its start; an explicit start=end makes it one day.
+  const endDate=input.endDate===undefined?(existing?.endDate?shiftTaskDates(existing,input.date).endDate||input.date:input.date):input.endDate;
+  if(!isDateKey(endDate))throw new Error('请选择有效的结束日期');
+  if(endDate<input.date)throw new Error('结束日期不能早于开始日期');
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.time||'')) throw new Error('请选择有效时间');
   const duration=Number(input.duration), reminder=Number(input.reminder);
   if (!Number.isInteger(duration)||duration<15||duration>1440) throw new Error('时长须为 15–1440 分钟');
   if (![ -1,0,5,10,15,30,60,1440 ].includes(reminder)) throw new Error('提醒时间不正确');
   if (!CATEGORIES.includes(input.category)) throw new Error('请选择有效分类');
   const task={id:existing?.id||crypto.randomUUID(),title,date:input.date,time:input.time,duration,reminder,category:input.category,priority:input.priority==='high'?'high':'normal',notes:String(input.notes||'').slice(0,5000),done:!!input.done,createdAt:existing?(Number.isFinite(existing.createdAt)&&existing.createdAt>0?existing.createdAt:0):Date.now(),updatedAt:Date.now()};
+  if(endDate>input.date)task.endDate=endDate;
   if (existing && existing.date===task.date && existing.time===task.time && existing.reminder===task.reminder) {
     task.notifiedAt=existing.notifiedAt||null; task.snoozeUntil=existing.snoozeUntil||null;
   }
@@ -53,7 +60,7 @@ function makeSeries(task, repeat=1) {
     if(weekdays&&(d.getUTCDay()===0||d.getUTCDay()===6))continue;
     const date=d.toISOString().slice(0,10);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('重复日期超出支持范围');
-    result.push({...task,id:result.length?crypto.randomUUID():task.id,date,...(seriesId?{seriesId,seriesIndex:result.length}:{})});
+    result.push({...task,id:result.length?crypto.randomUUID():task.id,...shiftTaskDates(task,date),...(seriesId?{seriesId,seriesIndex:result.length}:{})});
   }
   return result;
 }
